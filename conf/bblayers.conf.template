@@ -1,0 +1,18 @@
+# POKY_BBLAYERS_CONF_VERSION is increased each time build/conf/bblayers.conf
+# changes incompatibly
+POKY_BBLAYERS_CONF_VERSION = "2"
+
+BBPATH = "${TOPDIR}"
+BBFILES ?= ""
+
+METAPATH="${TOPDIR}/.."
+
+BBLAYERS ?= " \
+  ${METAPATH}//meta \
+  ${METAPATH}/meta-poky \
+  ${METAPATH}/meta-yocto-bsp \
+  ${METAPATH}/meta-sol \
+  ${METAPATH}/meta-tegra \
+  ${METAPATH}/meta-openembedded/meta-oe \
+  ${METAPATH}/meta-linaro/meta-linaro-toolchain \
+  "
