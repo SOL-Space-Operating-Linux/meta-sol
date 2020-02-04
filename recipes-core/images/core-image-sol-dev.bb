@@ -19,4 +19,4 @@ IMAGE_INSTALL += "openssh util-linux cuda-samples tegra-tools \
 
 # Set root password
 # password = "test"
-#EXTRA_USERS_PARAMS = "usermod -p m7or76bu6AEY6 root;"
+EXTRA_USERS_PARAMS = "usermod -p m7or76bu6AEY6 root;"
