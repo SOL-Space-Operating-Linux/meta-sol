@@ -1,4 +1,4 @@
-# SSRL TX2i Yocto
+# SOL (Space Operating Linux) 
 
 ## Table of Contents
 1. [List of Useful References](#list-of-useful-references)
@@ -7,7 +7,7 @@
 4. [Build Configurations](#build-configurations)
 5. [First TX2/TX2i Build](#first-tx2/tx2i-build)
 6. [Flashing the TX2/TX2i](#flashing-the-tx2/tx2i)
-7. [meta-ssrl-tx2i](#meta-ssrl-tx2i)
+7. [meta-sol](#meta-sol)
 8. [Useful Commands](#useful-commands)
 
 ## List of Useful References
@@ -44,7 +44,7 @@ Cloning Git Repositories:
 git clone git://git.yoctoproject.org/poky -b zeus
 cd poky
 git clone https://github.com/madisongh/meta-tegra.git -b zeus-l4t-r32.3.1
-git clone TODO -b zeus-l4t-r32.3.1
+git clone https://github.com/SOL-Space-Operating-Linux/meta-sol.git -b zeus-l4t-r32.3.1
 ```
 
 Downloading Nvidia SDK Manager:
@@ -53,6 +53,8 @@ This will require to make an NVIDIA developer account.
 Once created download the NVIDIA SDK Manager program and download the required sdk's for your device with version 4.3 of the Jetpack.
 A command line version of this is available.
 Information for this can be found at https://developer.nvidia.com/nvidia-sdk-manager.
+
+This webpage contains everything you need to know for using SDK Manager on the command line: https://docs.nvidia.com/sdk-manager/sdkm-command-line-install/index.html
 
 *Note*: The cli version will require you to X-forward if you are ssh'ing into a build server to install the sdk's.
 If using Ubuntu 18.04 LTS, you may need to install libraries/packages from the ubuntu universe repository as well.
@@ -77,37 +79,35 @@ You will find that there is only a conf folder that contains the `bblayers.conf`
 
 Your bblayers variable in the bblayers.conf should look like the following:
 Correct the directory path for *USER* and if you have a differing directory structure.
+*Note*: You can find a template for these two files under meta-sol/conf/*.conf.template .
 ```
 BBLAYERS ?= " \
-  /home/ssrl/poky/meta \
-  /home/ssrl/poky/meta-poky \
-  /home/ssrl/poky/meta-yocto-bsp \
-  /home/ssrl/poky/meta-tegra \
-  /home/ssrl/poky/meta-tegra/contrib \
-  /home/ssrl/poky/meta-ssrl-tx2i \
+  /home/USER/poky/meta \
+  /home/USER/poky/meta-poky \
+  /home/USER/poky/meta-yocto-bsp \
+  /home/USER/poky/meta-tegra \
+  /home/USER/poky/meta-tegra/contrib \
+  /home/USER/poky/meta-sol \
   "
 ```
 
-Append the following to your local.conf file:
+Append the following to your local.conf file or alternatively use the provided local.conf.template file:
 ```
 #
-# TX2/TX2i Configuration
+# TX2/TX2i Configurations
 #
 
-MACHINE = "jetson-tx2i"
-# For development testing on the tx2
-# MACHINE = "jetson-tx2"
+# Compatible machines
+#
+# MACHINE="jetson-nano"
+# MACHINE="jetson-tx1"
+# MACHINE="jetson-tx2-4gb"
+# MACHINE="jetson-tx2"
+MACHINE="jetson-tx2i"
+# MACHINE="jetson-xavier"
 
-GCCVERSION = "7.%"
-require contrib/conf/include/gcc-compat.conf
-CUDA_VERSION = "10.0"
-LICENSE_FLAGS_WHITELIST = "commercial"
-IMAGE_CLASSES += "image_types_tegra"
-IMAGE_FSTYPES = "tegraflash"
-NVIDIA_DEVNET_MIRROR = "file:///home/ssrl/Downloads/nvidia/sdkm_downloads"
-
-# Used for CUDA testing, comment out in final deployment image
-IMAGE_INSTALL_append = "cuda-samples"
+# Nvidia SDK install location
+NVIDIA_DEVNET_MIRROR = "file:///home/$USER$/Downloads/nvidia/sdkm_downloads"
 ```
 There are a few options listed that will make development testing easier, they should be removed in the final build version.
 
@@ -116,7 +116,7 @@ Your final directory structure should look like the following:
 ~/poky/
     meta/
     meta-tegra/
-    meta-ssrl-tx2i/
+    meta-/
     ...
 
 ~/tx2i-build/
@@ -128,7 +128,13 @@ Your final directory structure should look like the following:
 ```
 
 ## First TX2/TX2i Build
-A minimal build for the TX2 can be run with the following command from within the tx2i-build directory:
+One of the following build images for the TX2i can be run with the following command from within the tx2i-build directory:
+```
+bitbake core-image-sol
+bitbake core-image-sol-dev
+```
+
+Alternatively, a minimal build for the TX2 can be run with the following command from within the tx2i-build directory:
 ```
 bitbake core-image-minimal
 ```
@@ -140,7 +146,7 @@ bitbake core-image-minimal
 All completed images are saved to the `tx2i-build/tmp/deploy/images` directory.
 meta-tegra includes an option to build an image that comes with a script to flash the TX2/TX2i.
 This was included in the `local.conf` file with `IMAGE_CLASSES += "image_types_tegra"` and `IMAGE_FSTYPES = "tegraflash"`.
-There will be a file named something similar to `core-image-minimal-jetson-tx2i.tegraflash.zip`.
+There will be a file named something similar to `core-image-sol-jetson-tx2i.tegraflash.zip`.
 1. Download the zip file to your host machine that you will flash the TX2/TX2i from and unzip.
 2. Connect the TX2/TX2i to your host machine with a micro-usb cable.
     *Note*: If your computer does not detect the TX2/TX2i at step 4 it could be because a cable without data lines was used.
@@ -164,12 +170,11 @@ cd /usr/bin/cuda-samples
 ./UnifiedMemoryStreams
 ```
 
-## meta-ssrl-tx2i
-This repository contains the SSRL meta layer with configurations/recipes that are specific to the SSRL build for the TX2/TX2i.
+## meta-sol
+This repository contains the meta-sol layer with configurations/recipes that are specific to the SOL build for the TX2/TX2i.
 
 #### TODO
 * Packages/Dependencies:
-  * Have dev version of build that includes OpenSSH
   * nvcc
   * python3 (Add a specific version)
   * remove unneeded packages
