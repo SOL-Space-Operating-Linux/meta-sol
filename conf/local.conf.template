@@ -250,6 +250,18 @@ PACKAGECONFIG_append_pn-nativesdk-qemu = " sdl"
 # this doesn't mean anything to you.
 CONF_VERSION = "1"
 
-MACHINE="jetson-tx2i"
+#
+# TX2/TX2i Configurations
+#
 
-NVIDIA_DEVNET_MIRROR = "file:////home/heistcc1/development/sol/nvidia"
+# Compatible machines
+#
+# MACHINE="jetson-nano"
+# MACHINE="jetson-tx1"
+# MACHINE="jetson-tx2-4gb"
+# MACHINE="jetson-tx2"
+MACHINE="jetson-tx2i"
+# MACHINE="jetson-xavier"
+
+# Nvidia SDK install location
+NVIDIA_DEVNET_MIRROR = "file:///home/$USER$/Downloads/nvidia/sdkm_downloads"

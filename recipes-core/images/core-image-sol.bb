@@ -1,52 +1,22 @@
-SUMMARY = "First SOL core image"
-
+SUMMARY = "SOL core image."
 
 LICENSE = "MIT"
 LICENSE_FLAGS_WHITELIST = "commercial"
 
+inherit core-image
 
-#Jetson hardcoding
+#
+# Jetson Specific Configurations
+#
 
-CUDA_VERSION="10.0"
-NVIDIA_DEVNET_MIRROR = "file:///home/aplsim/Downloads/nvidia/sdkm_downloads"
+CUDA_VERSION = "10.0"
+GCCVERSION = "7.%"
+require contrib/conf/include/gcc-compat.conf
 
-#IMAGE_FEATURES_append = " splash x11-base hwcodecs ssh-server-openssh post-install-logging"
-#IMAGE_FEATURES_remove = "allow-empty-password"
-#IMAGE_FEATURES_remove = "empty-root-password"
+# This must be set in your local.conf in the build/conf directory.
+# NVIDIA_DEVNET_MIRROR = "file:///home/$USER$/Downloads/nvidia/sdkm_downloads"
 
-
-
-#inherit core-image extrausers
-
-# Here, we set the root password for the image
-# password = test
-#EXTRA_USERS_PARAMS = "usermod -p m7or76bu6AEY6 root;"
-
+# Generates a .zip folder containing flashing scripts in
+# tmp/deploy/images/$MACHINE$.
 IMAGE_CLASSES += "image_types_tegra"
-
-IMAGE_FSTYPES = "tegraflash"
-
-PREFERRED_PROVIDER_virtual/bootloader = "cboot-prebuilt"
-
-
-
-
-GCCVERSION = "linaro-7.%"
-# GCC 7 doesn't support fmacro-prefix-map, results in "error: cannot compute suffix of object files: cannot compile"
-# Change the value from bitbake.conf DEBUG_PREFIX_MAP to remove -fmacro-prefix-map
-DEBUG_PREFIX_MAP = "-fdebug-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDPE}${PV}-${PR} \
-                    -fdebug-prefix-map=${STAGING_DIR_HOST}= \
-                    -fdebug-prefix-map=${STAGING_DIR_NATIVE}= \
-                    "
-
-#Tegra specific
-IMAGE_INSTALL_append = " cuda-samples \
-    tegra-tools \
-    tegra-nvpmodel \
-    "
-#Development specific
-IMAGE_INSTALL_append = " openssh util-linux"
-
-IMAGE_INSTALL = "\
-    sudo nano \
-    "
+IMAGE_FSTYPE = "tegraflash"
