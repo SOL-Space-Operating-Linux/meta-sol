@@ -23,8 +23,8 @@ IMAGE_FEATURES += "splash x11-base hwcodecs ssh-server-openssh \
     post-install-logging"
 IMAGE_FEATURES_remove = "allow-empty-password empty-root-password"
 
-# Development tool packages to install
-IMAGE_INSTALL += "sol-packagegroup-devtools"
+# Packages to install
+IMAGE_INSTALL += "packagegroup-devtools packagegroup-sol-core"
 
 # Set root password
 # password = "test"

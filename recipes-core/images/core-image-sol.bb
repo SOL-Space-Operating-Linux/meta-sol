@@ -16,3 +16,6 @@ inherit core-image image_types_tegra
 # tmp/deploy/images/$MACHINE$.
 IMAGE_CLASSES += "image_types_tegra"
 IMAGE_FSTYPES = "tegraflash"
+
+# Packages to install
+IMAGE_INSTALL += "packagegroup-sol-core"
