@@ -108,6 +108,10 @@ MACHINE="jetson-tx2i"
 
 # Nvidia SDK install location
 NVIDIA_DEVNET_MIRROR = "file:///home/$USER$/Downloads/nvidia/sdkm_downloads"
+
+CUDA_VERSION = "10.0"
+GCCVERSION = "7.%"
+require contrib/conf/include/gcc-compat.conf
 ```
 There are a few options listed that will make development testing easier, they should be removed in the final build version.
 
@@ -140,12 +144,18 @@ bitbake core-image-minimal
 ```
 *Note*: The initial build may take a LOT of time to execute, go grab a cup of coffee in the meantime. Suspsequent builds should be much quicker depending on what is changed and if the tmp, cache, downloads, and sstate-cache directories have not been deleted.
 
+*Note*: If you do `core-image-minimal`, then you must manually append these lines into your `local.conf` file.
+```
+IMAGE_CLASSES += "image_types_tegra"
+IMAGE_FSTYPES = "tegraflash"
+```
+
 *Note*: If you are attempting to build for a Jetson Nano, this README does not have all steps necessary to successfully build. Please reference the `meta-tegra` repository for more information on Jetson Nano.
 
 ## Flashing the TX2/TX2i
 All completed images are saved to the `tx2i-build/tmp/deploy/images` directory.
 meta-tegra includes an option to build an image that comes with a script to flash the TX2/TX2i.
-This was included in the `local.conf` file with `IMAGE_CLASSES += "image_types_tegra"` and `IMAGE_FSTYPES = "tegraflash"`.
+This was included in the image files with `IMAGE_CLASSES += "image_types_tegra"` and `IMAGE_FSTYPES = "tegraflash"`.
 There will be a file named something similar to `core-image-sol-jetson-tx2i.tegraflash.zip`.
 1. Download the zip file to your host machine that you will flash the TX2/TX2i from and unzip.
 2. Connect the TX2/TX2i to your host machine with a micro-usb cable.
@@ -164,6 +174,7 @@ The TX2/TX2i should automatically reboot with the new image.
 Login with root and no password.
 
 To verify that CUDA is working enter the following commands.
+*Note*: 'cuda-samples' is only included in the 'core-image-sol-dev' image.
 ```
 cd /usr/bin/cuda-samples
 ./deviceQuery
@@ -190,7 +201,7 @@ bitbake -g <image> && cat pn-buildlist | grep -ve "native" | sort | uniq
 
 List all package and their versions for image target:
 ```
-cat tmp/deploy/images/*/core-image-base-*.manifest
+cat tmp/deploy/images/*/core-image-sol-*.manifest
 ```
 
 List all layers for image target:
