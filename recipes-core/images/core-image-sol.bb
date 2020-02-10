@@ -3,7 +3,7 @@ SUMMARY = "SOL core image."
 LICENSE = "MIT"
 LICENSE_FLAGS_WHITELIST = "commercial"
 
-inherit core-image
+inherit core-image image_types_tegra
 
 #
 # Jetson Specific Configurations
@@ -19,4 +19,4 @@ require contrib/conf/include/gcc-compat.conf
 # Generates a .zip folder containing flashing scripts in
 # tmp/deploy/images/$MACHINE$.
 IMAGE_CLASSES += "image_types_tegra"
-IMAGE_FSTYPE = "tegraflash"
+IMAGE_FSTYPES = "tegraflash"
