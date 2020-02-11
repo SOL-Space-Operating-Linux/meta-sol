@@ -24,6 +24,7 @@ IMAGE_FEATURES_remove = "allow-empty-password empty-root-password"
 
 # Packages to install
 IMAGE_INSTALL = "packagegroup-core-boot packagegroup-core-buildessential \
+    packagegroup-base-extended \
     packagegroup-devtools packagegroup-sol-core \
 "
 

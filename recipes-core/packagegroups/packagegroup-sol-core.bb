@@ -6,4 +6,5 @@ inherit packagegroup
 RDEPENDS_${PN} = " \
     libpng \
     tiff \
+    python3 \
 "
