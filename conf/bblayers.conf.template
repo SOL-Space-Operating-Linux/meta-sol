@@ -12,6 +12,6 @@ BBLAYERS ?= " \
   ${METAPATH}/meta-poky \
   ${METAPATH}/meta-yocto-bsp \
   ${METAPATH}/meta-tegra \
-  ${METAPATH}/meta-tegra/contib \
-  ${METAPATH}/meta-ssrl-tx2i \
+  ${METAPATH}/meta-tegra/contrib \
+  ${METAPATH}/meta-sol \
   "
