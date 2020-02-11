@@ -189,6 +189,7 @@ This repository contains the meta-sol layer with configurations/recipes that are
   * nvcc
   * python3 (Add a specific version)
   * remove unneeded packages
+* Google coral compatability
 * Ram Filesystem
 * CORGI Interface
 * Find more stuff that needs to be done

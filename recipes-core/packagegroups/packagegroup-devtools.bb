@@ -5,6 +5,8 @@ inherit packagegroup
 
 RDEPENDS_${PN} = " \
     openssh \
+    openssh-sftp \
+    openssh-sftp-server \
     util-linux \
     cuda-samples \
     tegra-tools \

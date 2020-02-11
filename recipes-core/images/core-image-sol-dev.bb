@@ -20,7 +20,6 @@ IMAGE_FSTYPES = "tegraflash"
 
 # Development features
 IMAGE_FEATURES += "ssh-server-openssh post-install-logging"
-IMAGE_FEATURES_remove = "allow-empty-password empty-root-password"
 
 # Packages to install
 IMAGE_INSTALL = "packagegroup-core-boot packagegroup-core-buildessential \
@@ -28,6 +27,7 @@ IMAGE_INSTALL = "packagegroup-core-boot packagegroup-core-buildessential \
     packagegroup-devtools packagegroup-sol-core \
 "
 
-# Set root password
-# password = "test"
+# Set root password (password = "test")
+inherit extrausers
+IMAGE_FEATURES_remove = "allow-empty-password empty-root-password"
 EXTRA_USERS_PARAMS = "usermod -p m7or76bu6AEY6 root;"
