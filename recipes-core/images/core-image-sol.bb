@@ -18,4 +18,4 @@ IMAGE_CLASSES += "image_types_tegra"
 IMAGE_FSTYPES = "tegraflash"
 
 # Packages to install
-IMAGE_INSTALL += "packagegroup-sol-core"
+IMAGE_INSTALL = "packagegroup-core-boot packagegroup-sol-core"

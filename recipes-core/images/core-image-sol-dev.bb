@@ -19,12 +19,13 @@ IMAGE_CLASSES += "image_types_tegra"
 IMAGE_FSTYPES = "tegraflash"
 
 # Development features
-IMAGE_FEATURES += "splash x11-base hwcodecs ssh-server-openssh \
-    post-install-logging"
+IMAGE_FEATURES += "ssh-server-openssh post-install-logging"
 IMAGE_FEATURES_remove = "allow-empty-password empty-root-password"
 
 # Packages to install
-IMAGE_INSTALL += "packagegroup-devtools packagegroup-sol-core"
+IMAGE_INSTALL = "packagegroup-core-boot packagegroup-core-buildessential \
+    packagegroup-devtools packagegroup-sol-core \
+"
 
 # Set root password
 # password = "test"
