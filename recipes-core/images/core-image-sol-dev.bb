@@ -27,7 +27,7 @@ IMAGE_INSTALL = "packagegroup-core-boot packagegroup-core-buildessential \
     packagegroup-devtools packagegroup-sol-core \
 "
 
-# Set root password (password = "test")
+# Set root password (password = "tegratest")
 inherit extrausers
 IMAGE_FEATURES_remove = "allow-empty-password empty-root-password"
-EXTRA_USERS_PARAMS = "usermod -p m7or76bu6AEY6 root;"
+EXTRA_USERS_PARAMS = "usermod -P tegratest root;"

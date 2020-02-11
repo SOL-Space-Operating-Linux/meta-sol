@@ -11,4 +11,6 @@ RDEPENDS_${PN} = " \
     cuda-samples \
     tegra-tools \
     tegra-nvpmodel \
+    vim git curl wget \
+    unzip usbutils \
 "
