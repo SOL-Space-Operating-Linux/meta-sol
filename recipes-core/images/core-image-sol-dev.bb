@@ -19,7 +19,9 @@ IMAGE_CLASSES += "image_types_tegra"
 IMAGE_FSTYPES = "tegraflash"
 
 # Development features
-IMAGE_FEATURES += "ssh-server-openssh post-install-logging"
+IMAGE_FEATURES += "ssh-server-openssh post-install-logging \
+    debug-tweaks tools-profile dbg-pkgs \
+"
 
 # Packages to install
 IMAGE_INSTALL = "packagegroup-core-boot packagegroup-core-buildessential \
