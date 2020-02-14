@@ -38,6 +38,10 @@ Required Installations:
 sudo apt install gawk wget git-core diffstat unzip texinfo gcc-multilib \
      build-essential chrpath socat libsdl1.2-dev xterm
 ```
+Tegra-SFM Specific Dependencies:
+* [CUDA-Toolkit 10](https://developer.nvidia.com/cuda-toolkit) for nccc
+* libpng
+* libtiff-dev
 
 Cloning Git Repositories:
 ```
