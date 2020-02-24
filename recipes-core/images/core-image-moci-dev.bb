@@ -20,7 +20,7 @@ IMAGE_FSTYPES = "tegraflash"
 
 # Development features
 IMAGE_FEATURES += "ssh-server-openssh post-install-logging \
-    debug-tweaks tools-profile dbg-pkgs \
+    debug-tweaks dbg-pkgs \
 "
 
 # Packages to install
