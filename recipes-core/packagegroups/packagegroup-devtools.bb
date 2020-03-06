@@ -4,13 +4,12 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 inherit packagegroup
 
 RDEPENDS_${PN} = " \
-    openssh \
-    openssh-sftp \
-    openssh-sftp-server \
-    util-linux \
     cuda-samples \
+    cuda-core-dev \
+    cuda-toolkit-dev \
     tegra-tools \
-    tegra-nvpmodel \
+    haveged \
+    bash util-linux \
     vim git curl wget \
     unzip usbutils \
 "

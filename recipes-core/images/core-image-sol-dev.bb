@@ -13,20 +13,14 @@ require core-image-sol.bb
 # This must be set in your local.conf in the build/conf directory.
 # NVIDIA_DEVNET_MIRROR = "file:///home/$USER$/Downloads/nvidia/sdkm_downloads"
 
-# Generates a .zip folder containing flashing scripts in
-# tmp/deploy/images/$MACHINE$.
-IMAGE_CLASSES += "image_types_tegra"
-IMAGE_FSTYPES = "tegraflash"
-
 # Development features
-IMAGE_FEATURES += "ssh-server-openssh post-install-logging \
+IMAGE_FEATURES += "ssh-server-dropbear post-install-logging \
     debug-tweaks dbg-pkgs \
 "
 
 # Packages to install
-IMAGE_INSTALL = "packagegroup-core-boot packagegroup-core-buildessential \
-    packagegroup-base-extended \
-    packagegroup-devtools packagegroup-sol-core \
+IMAGE_INSTALL += "packagegroup-core-buildessential \
+    packagegroup-devtools \
 "
 
 # Set root password (password = "tegratest")
