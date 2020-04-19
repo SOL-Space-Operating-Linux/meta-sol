@@ -1,9 +1,8 @@
 SUMMARY = "SOL core development image"
 
 LICENSE = "MIT"
-LICENSE_FLAGS_WHITELIST = "commercial"
 
-inherit core-image image_types_tegra
+#inherit core-image image_types_tegra
 require core-image-sol.bb
 
 #
