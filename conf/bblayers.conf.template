@@ -5,14 +5,13 @@ POKY_BBLAYERS_CONF_VERSION = "2"
 BBPATH = "${TOPDIR}"
 BBFILES ?= ""
 
-METAPATH="${TOPDIR}/.."
+METAPATH="${TOPDIR}/../poky"
 
 BBLAYERS ?= " \
-  ${METAPATH}//meta \
+  ${METAPATH}/meta \
   ${METAPATH}/meta-poky \
   ${METAPATH}/meta-yocto-bsp \
-  ${METAPATH}/meta-sol \
   ${METAPATH}/meta-tegra \
-  ${METAPATH}/meta-openembedded/meta-oe \
-  ${METAPATH}/meta-linaro/meta-linaro-toolchain \
+  ${METAPATH}/meta-tegra/contrib \
+  ${METAPATH}/meta-sol \
   "
