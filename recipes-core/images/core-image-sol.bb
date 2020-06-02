@@ -1,23 +1,20 @@
-SUMMARY = "SOL core image"
+SUMMARY = "SOL core image - directly copied from core-image-minimal"
+
+IMAGE_LINGUAS = " "
 
 LICENSE = "MIT"
-LICENSE_FLAGS_WHITELIST = "commercial"
 
-inherit core-image image_types_tegra
+# Packages to install
+IMAGE_INSTALL = "packagegroup-core-boot \
+    ${CORE_IMAGE_EXTRA_INSTALL} \
+    packagegroup-sol-core \
+    tegra-firmware-xusb \
+"
 
-#
-# Jetson Specific Configurations
-#
-
-# This must be set in your local.conf in the build/conf directory.
-# NVIDIA_DEVNET_MIRROR = "file:///home/$USER$/Downloads/nvidia/sdkm_downloads"
-
-# Generates a .zip folder containing flashing scripts in
-# tmp/deploy/images/$MACHINE$.
 IMAGE_CLASSES += "image_types_tegra"
 IMAGE_FSTYPES = "tegraflash"
 
-# Packages to install
-IMAGE_INSTALL = "${CORE_IMAGE_EXTRA_INSTALL} \
-    packagegroup-core-boot packagegroup-sol-core \
-"
+inherit core-image
+
+IMAGE_ROOTFS_SIZE ?= "8192"
+IMAGE_ROOTFS_EXTRA_SPACE_append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
