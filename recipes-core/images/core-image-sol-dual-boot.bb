@@ -2,10 +2,16 @@ SUMMARY = "SOL core development image"
 
 LICENSE = "MIT"
 
+
+IMAGE_CLASSES += "image_types_tegralive"
+IMAGE_TEGRAFLASH_FS_TYPE = "ext4.live"
+#remove this line if you want a faster larger build (just tar, no xz)
+LIVE_IMAGE_COMPRESSION = "xz" 
+
 #inherit core-image image_types_tegra
 require core-image-sol.bb
 
-#IMAGE_FEATURES += " tegra-dual-live-boot"
+
 
 # Development features
 IMAGE_FEATURES += "ssh-server-dropbear post-install-logging \
