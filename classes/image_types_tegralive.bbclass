@@ -50,6 +50,14 @@ oe_mkext234fs () {
 	rm -rf ${IMAGE_ROOTFS_TMP}
 	mkdir -p ${IMAGE_ROOTFS_TMP}
 	cp -r ${IMAGE_ROOTFS}/boot ${IMAGE_ROOTFS_TMP}/boot
+	cp -r ${IMAGE_ROOTFS}/boot ${IMAGE_ROOTFS_TMP}/boot1
+	cp -r ${IMAGE_ROOTFS}/boot ${IMAGE_ROOTFS_TMP}/boot2
+	mkdir -p ${IMAGE_ROOTFS_TMP}/boothash/extlinux
+	for file in ${IMAGE_ROOTFS_TMP}/boot/* ${IMAGE_ROOTFS_TMP}/boot/*/*; do
+		if [ -f "${file}" ]; then
+			md5sum $file > ${IMAGE_ROOTFS_TMP}/boothash/${file#"${IMAGE_ROOTFS_TMP}/boot/"} #parallel directory structure
+		fi
+	done
     cp ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar ${IMAGE_ROOTFS_TMP}/live_rootfs.tar
 
 	#Choose your hash algorithm here
