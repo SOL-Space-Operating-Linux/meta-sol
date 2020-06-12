@@ -58,6 +58,22 @@ oe_mkext234fs () {
 			md5sum $file > ${IMAGE_ROOTFS_TMP}/boothash/${file#"${IMAGE_ROOTFS_TMP}/boot/"} #parallel directory structure
 		fi
 	done
+
+	touch ${IMAGE_ROOTFS_TMP}/info
+	for file in Image u-boot-dtb.bin initrd; do
+		name=$(basename $(realpath ${IMAGE_ROOTFS_TMP}/boot/${file}))
+		size=$(wc -c ${IMAGE_ROOTFS_TMP}/boot/${name} | awk '{print $1}')
+		for item in $name $size; do
+			printf $item >> ${IMAGE_ROOTFS_TMP}/info
+			len=${#item}
+			while [ $len -lt 60 ]; do
+				#Pad with null characters so every entity is 20 bytes
+				printf '\0' >> ${IMAGE_ROOTFS_TMP}/info 
+				len=$(echo $len + 1 | bc)
+			done
+		done
+	done
+
     cp ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar ${IMAGE_ROOTFS_TMP}/live_rootfs.tar
 
 	#Choose your hash algorithm here
