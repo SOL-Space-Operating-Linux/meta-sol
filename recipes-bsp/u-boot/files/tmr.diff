@@ -1,3 +1,23 @@
+diff --git a/README b/README
+index 26d5ad273e..15542b816d 100644
+--- a/README
++++ b/README
+@@ -5,6 +5,15 @@
+ # SPDX-License-Identifier:	GPL-2.0+
+ #
+ 
++TMR Instructions:
++=================
++
++The TMR code is written in common/tmr.c and implemented in common/main.c (n main_loop()).
++
++Before flashing, some modifications must be made on the TX2i filesystem. Make 3 copies of the boot image (stored as /boot/Image, /boot/Image1, /boot/Image2), and store an md5 hash for each (/boot/hash, /boot/hash1, /boot/hash2). The filesize of the image is hard-coded into the TMR code (0x34048008 bytes, in hex), and this should be changed on common/tmr.c:68 if using an image of a different size.
++
++To flash the kernel, follow the "U-Boot Customization" instructions in the L4T docs, particularly the "Flashing U-Boot Only" section.
++
+ Summary:
+ ========
+ 
 diff --git a/cmd/md5sum.c b/cmd/md5sum.c
 index 23bb81e88c..e653b80deb 100644
 --- a/cmd/md5sum.c
@@ -11,7 +31,7 @@ index 23bb81e88c..e653b80deb 100644
  /*
   * Store the resulting sum to an address or variable
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..7f5f11a514 100644
+index 2116a9e0a2..a3e7c80f9a 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -12,6 +12,7 @@
@@ -22,20 +42,38 @@ index 2116a9e0a2..7f5f11a514 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +64,10 @@ void main_loop(void)
+@@ -63,6 +64,28 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
-+	char * const tmr_files[] = {"/boot/Image", "/boot/hash","/boot/Image1","/boot/hash1","/boot/Image2","/boot/hash2"};
-+	loff_t tmr_size = 34048008;
-+	tmr(tmr_files, tmr_size);
++	char *tmr_names[6];
++	fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
++	for(int i = 0; i < 6; i ++) {
++		fs_read("info", 0x84000000, 60*i, 60, NULL);
++		tmr_names[i] = (char *)map_sysmem(0x84000000, 60);
++		unmap_sysmem((const void *)tmr_names[i]);
++	}
++	for(int i = 0; i < 3; i ++){
++		char file1[70] = "/boot/";
++		char file2[70] = "/boot1/";
++		char file3[70] = "/boot2/";
++		char hash[70] = "/boothash/";
++		strcat(file1, tmr_names[i]);
++		strcat(file2, tmr_names[i]);
++		strcat(file3, tmr_names[i]);
++		strcat(hash, tmr_names[i]);
++		char * const tmr_files[] = {file1, hash, file2, hash, file3, hash};
++		loff_t tmr_size = (loff_t) simple_strtoul(tmr_names[2*i+1], NULL, 10);
++		printf("Redundancy for %s of size %lld", file1, tmr_size);
++		tmr(tmr_files, tmr_size); 
++	}
 +
  	autoboot_command(s);
  
  	cli_loop();
 diff --git a/common/tmr.c b/common/tmr.c
 new file mode 100644
-index 0000000000..28310c7e3a
+index 0000000000..0ec7f09c5a
 --- /dev/null
 +++ b/common/tmr.c
 @@ -0,0 +1,109 @@
@@ -148,8 +186,9 @@ index 0000000000..28310c7e3a
 +	fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
 +	fs_write(files[0], locations[6], 0, filesize, &actwrite);
 +}
+\ No newline at end of file
 diff --git a/include/configs/p2771-0000.h b/include/configs/p2771-0000.h
-index 61310fbdf2..0984ad99f7 100644
+index 1c8981b16f..fce1e963dc 100644
 --- a/include/configs/p2771-0000.h
 +++ b/include/configs/p2771-0000.h
 @@ -33,6 +33,10 @@
