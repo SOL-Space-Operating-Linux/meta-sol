@@ -58,10 +58,10 @@ index 2116a9e0a2..a3e7c80f9a 100644
 +		char file2[70] = "/boot1/";
 +		char file3[70] = "/boot2/";
 +		char hash[70] = "/boothash/";
-+		strcat(file1, tmr_names[i]);
-+		strcat(file2, tmr_names[i]);
-+		strcat(file3, tmr_names[i]);
-+		strcat(hash, tmr_names[i]);
++		strcat(file1, tmr_names[2*i]);
++		strcat(file2, tmr_names[2*i]);
++		strcat(file3, tmr_names[2*i]);
++		strcat(hash, tmr_names[2*i]);
 +		char * const tmr_files[] = {file1, hash, file2, hash, file3, hash};
 +		loff_t tmr_size = (loff_t) simple_strtoul(tmr_names[2*i+1], NULL, 10);
 +		printf("Redundancy for %s of size %lld", file1, tmr_size);
