@@ -5,4 +5,5 @@ inherit packagegroup
 
 RDEPENDS_${PN} = " \
     python3 \
+    tegra-redundant-boot \
 "
