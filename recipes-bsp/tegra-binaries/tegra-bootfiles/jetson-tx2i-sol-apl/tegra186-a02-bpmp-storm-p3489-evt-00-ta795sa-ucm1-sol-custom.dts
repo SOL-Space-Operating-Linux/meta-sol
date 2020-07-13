@@ -1460,32 +1460,6 @@
 			};
 		};
 
-		clock@ahub {
-			clk-id = <0x57>;
-
-			rail@vdd_core {
-				rail-id = <0x2>;
-
-				opp@0 {
-					cvb-coeffs = <0x3f51eb85 0x0 0x0>;
-					freq = <0x0 0x2ee03e8>;
-				};
-			};
-		};
-
-		clock@spdif_out {
-			clk-id = <0xee>;
-
-			rail@vdd_core {
-				rail-id = <0x2>;
-
-				opp@0 {
-					cvb-coeffs = <0x3f51eb85 0x0 0x0>;
-					freq = <0x0 0x17703e8>;
-				};
-			};
-		};
-
 		clock@spdif_in {
 			clk-id = <0x2c>;
 
