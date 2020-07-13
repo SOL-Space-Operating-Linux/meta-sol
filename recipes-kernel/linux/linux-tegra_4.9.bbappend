@@ -9,6 +9,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 SRC_URI_append = " file://tegra186-quill-p3489-1000-a00-00-ucm1-sol-custom.dts"
 
 do_configure_append() {
+    install -d 0644 ${B}/arch/${ARCH}/boot/dts/
 	install -m 0644 "${WORKDIR}/tegra186-quill-p3489-1000-a00-00-ucm1-sol-custom.dts" "${B}/arch/${ARCH}/boot/dts/tegra186-quill-p3489-1000-a00-00-ucm1-sol-custom.dts"
 }
 
