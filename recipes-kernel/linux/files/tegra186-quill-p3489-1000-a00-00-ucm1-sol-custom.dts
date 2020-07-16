@@ -9298,7 +9298,7 @@
 			clock-names = "sor1_ref", "sor_safe", "sor1_pad_clkout", "sor1", "pll_dp", "pllp_out0", "maud", "hda", "hda2codec_2x", "hda2hdmi";
 			resets = <0x10 0x6c 0x10 0xf 0x10 0x10 0x10 0x11>;
 			reset-names = "sor1", "hda_rst", "hda2codec_2x_rst", "hda2hdmi_rst";
-			status = "okay";
+			status = "disabled";
 			nvidia,ddc-i2c-bus = <0x92>;
 			nvidia,active-panel = <0x93>;
 			nvidia,hpd-gpio = <0x1b 0x79 0x1>;
@@ -9307,7 +9307,7 @@
 
 			hdmi-display {
 				compatible = "hdmi,display";
-				status = "okay";
+				status = "disabled";
 				generic-infoframe-type = <0x87>;
 				linux,phandle = <0x93>;
 				phandle = <0x93>;
@@ -12743,10 +12743,10 @@
 					};
 
 					sor1 {
-						status = "okay";
+						status = "disabled";
 
 						hdmi-display {
-							status = "okay";
+							status = "disabled";
 						};
 
 						dp-display {
