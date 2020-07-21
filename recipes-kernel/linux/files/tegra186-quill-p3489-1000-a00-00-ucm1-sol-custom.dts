@@ -1263,6 +1263,7 @@
 
 		ina3221x@42 {
 			compatible = "ti,ina3221x";
+			status = "disabled";
 			reg = <0x42>;
 			ti,trigger-config = <0x7003>;
 			ti,continuous-config = <0x7c07>;
@@ -1291,6 +1292,7 @@
 
 		ina3221x@43 {
 			compatible = "ti,ina3221x";
+			status = "disabled";
 			reg = <0x43>;
 			ti,trigger-config = <0x7003>;
 			ti,continuous-config = <0x7c07>;
@@ -1317,6 +1319,41 @@
 			};
 		};
 
+		gpio@74 {
+			compatible = "ti,tca9539";
+			status = "disabled";
+			reg = <0x74>;
+			gpio-controller;
+			#gpio-cells = <0x2>;
+			vcc-supply = <0x26>;
+			linux,phandle = <0xea>;
+			phandle = <0xea>;
+
+			touch-rails {
+				gpio-hog;
+				gpios = <0x1 0x0 0x2 0x0>;
+				output-high;
+				label = "touch-rail-1", "touch-rail-2";
+			};
+		};
+
+		gpio@77 {
+			compatible = "ti,tca9539";
+			status = "disabled";
+			reg = <0x77>;
+			gpio-controller;
+			#gpio-cells = <0x2>;
+			vcc-supply = <0x26>;
+			linux,phandle = <0x8d>;
+			phandle = <0x8d>;
+
+			lcd-bias-rails {
+				gpio-hog;
+				gpios = <0x4 0x0>;
+				output-high;
+				label = "lcd-bias-en-rail";
+			};
+		};
 
 		gpio@21 {
 			compatible = "ti,tca6408";
@@ -1607,6 +1644,7 @@
 
 				ina3221x@42 {
 					compatible = "ti,ina3221x";
+					status = "disabled";
 					reg = <0x42>;
 					ti,trigger-config = <0x7003>;
 					ti,continuous-config = <0x7c07>;
@@ -12743,7 +12781,7 @@
 					};
 
 					sor1 {
-						status = "disabled";
+						status = "okay";
 
 						hdmi-display {
 							status = "disabled";
@@ -16532,6 +16570,8 @@
 		lp8557_backlight = "/i2c@3160000/lp8557-backlight-s-wuxga-8-0@2c";
 		ina3221x_40 = "/i2c@3160000/ina3221x@40";
 		ina3221x_41 = "/i2c@3160000/ina3221x@41";
+		gpio_i2c_0_74 = "/i2c@3160000/gpio@74";
+		gpio_i2c_0_77 = "/i2c@3160000/gpio@77";
 		gpio_i2c_0_21 = "/i2c@3160000/gpio@21";
 		vpp_lcd = "/i2c@3160000/tps65132@3e/outp";
 		vmm_lcd = "/i2c@3160000/tps65132@3e/outn";
