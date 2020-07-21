@@ -5,6 +5,7 @@ inherit packagegroup
 
 RDEPENDS_${PN} = " \
     cuda-toolkit \
+    cuda-samples \
     tegra-tools \
     haveged \
     bash util-linux \
