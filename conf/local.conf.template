@@ -25,10 +25,12 @@ CONF_VERSION = "1"
 # jetson-tx2
 # jetson-tx2i
 # jetson-xavier
-MACHINE ?= "jetson-tx2i"
+
+MACHINE ?= "jetson-tx2i-sol-apl"
+#MACHINE ?= "jetson-tx2i-sol-base"
+#MACHINE ?= "jetson-tx2i-sol-redundant-live"
+
 
 # Nvidia SDK install location
 NVIDIA_DEVNET_MIRROR = "file:///home/$USER/Downloads/nvidia/sdkm_downloads"
 
-# CUDA and GCC Compatibility
-CUDA_VERSION = "10.0"
