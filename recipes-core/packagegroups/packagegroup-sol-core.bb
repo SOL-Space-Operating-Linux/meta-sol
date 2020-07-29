@@ -9,4 +9,5 @@ RDEPENDS_${PN} = " \
     tegra-nvpmodel \
     python3 \
     tegra-redundant-boot \
+    tegra-nvpmodel \
 "
