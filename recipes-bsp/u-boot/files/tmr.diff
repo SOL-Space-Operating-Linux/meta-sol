@@ -31,7 +31,7 @@ index 23bb81e88c..e653b80deb 100644
  /*
   * Store the resulting sum to an address or variable
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..42a2d280c8 100644
+index 2116a9e0a2..c9299d7649 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -11,7 +11,9 @@
@@ -44,13 +44,16 @@ index 2116a9e0a2..42a2d280c8 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +65,33 @@ void main_loop(void)
+@@ -63,6 +65,36 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
 +	char *tmr_names[6];
++	printf("Reading filenames from info file\n");
 +	fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
-+	fs_read("info", 0x84000000, 0, 360, NULL);
++	loff_t actread;
++	fs_read("info", 0x84000000, 0, 360, &actread);
++	printf("Read %lld of 360 bytes\n", actread);
 +	char *all_names = (char *)map_sysmem(0x84000000, 360);
 +
 +	for (int i = 0; i < 6; i ++) {
@@ -69,7 +72,7 @@ index 2116a9e0a2..42a2d280c8 100644
 +		strcat(hash, tmr_names[2*i]);
 +		char * const tmr_files[] = {file1, hash, file2, hash, file3, hash};
 +		loff_t tmr_size = (loff_t) simple_strtoul(tmr_names[2*i+1], NULL, 10);
-+		printf("Redundancy for %s of size %lld\n", file1, tmr_size);
++		printf("Redundancy for %s, %s, %s, %s with size %lld\n", file1, file2, file3, hash, tmr_size);
 +		tmr(tmr_files, tmr_size); 
 +	}
 +
@@ -80,10 +83,10 @@ index 2116a9e0a2..42a2d280c8 100644
  	cli_loop();
 diff --git a/common/tmr.c b/common/tmr.c
 new file mode 100644
-index 0000000000..0ec7f09c5a
+index 0000000000..bc58f021cf
 --- /dev/null
 +++ b/common/tmr.c
-@@ -0,0 +1,109 @@
+@@ -0,0 +1,126 @@
 +#include <common.h>
 +#include <console.h>
 +#include <bootretry.h>
@@ -104,24 +107,40 @@ index 0000000000..0ec7f09c5a
 +		loff_t actread;
 +		if(i % 2) {
 +			fs_read(files[i], locations[i], 0, 16, &actread);
++			printf("Read %lld of 16 bytes from %s\n", actread, files[i]);
 +		} else {
 +			fs_read(files[i], locations[i], 0, filesize, &actread);
++			printf("Read %lld of %lld bytes from %s\n", actread, filesize, files[i]);
 +		}
 +	}
 +}
 +
 +int check_hash(int file) {
-+	unsigned char sum[16];
++	unsigned char calculated_sum[16], stored_sum[16];
++	
 +	void *buf = map_sysmem(locations[file*2], filesize);
-+	md5_wd(buf, filesize, sum, 64 << 10);
++	md5_wd(buf, filesize, calculated_sum, 64 << 10);
 +	unmap_sysmem(buf);
 +
 +	buf = map_sysmem(locations[file*2+1], 16);
-+	for (int i = 0; i < 16; i++) {
-+		if (*(u8 *)buf != sum[i]) return 0;
-+		buf += 1;
-+	}
++	memcpy(stored_sum, (u8 *)buf, 16);
 +	unmap_sysmem(buf);
++
++	for (int i = 0; i < 16; i++) {
++		if (stored_sum[i] != calculated_sum[i]) {
++			printf("Stored hash was ");
++			for (int j = 0; j < 16; j++) {
++				printf("%x", stored_sum[j]);
++			}
++			printf(" but calculated hash was ");
++			for (int j = 0; j < 16; j++) {
++				printf("%x", calculated_sum[j]);
++			}
++			printf("\n");
++			return 0;
++		}
++	}
++
 +	return 1;
 +}
 +
@@ -192,10 +211,11 @@ index 0000000000..0ec7f09c5a
 +	majority_wd(locations[0], locations[2], locations[4], locations[6], filesize);
 +	fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
 +	fs_write(files[0], locations[6], 0, filesize, &actwrite);
++	printf("Wrote tmr result with size %lld of %lld back to %s\n", actwrite, filesize, files[0]);
 +}
 \ No newline at end of file
 diff --git a/include/configs/p2771-0000.h b/include/configs/p2771-0000.h
-index 1c8981b16f..fce1e963dc 100644
+index 1c8981b16f..ee863a557f 100644
 --- a/include/configs/p2771-0000.h
 +++ b/include/configs/p2771-0000.h
 @@ -33,6 +33,10 @@
@@ -204,7 +224,7 @@ index 1c8981b16f..fce1e963dc 100644
  
 +/* Custom Commands */
 +#define CONFIG_CMD_TMR
-+#define CONFIG_MD5
++#define CONFIG_CMD_MD5SUM
 +
  #define BOARD_EXTRA_ENV_SETTINGS \
  	"calculated_vars=kernel_addr_r fdt_addr_r scriptaddr pxefile_addr_r " \
