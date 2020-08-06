@@ -12,6 +12,11 @@ BBLAYERS ?= " \
   ${METAPATH}/meta-poky \
   ${METAPATH}/meta-yocto-bsp \
   ${METAPATH}/meta-openembedded/meta-oe \
+  ${METAPATH}/meta-openembedded/meta-multimedia \
+  ${METAPATH}/meta-openembedded/meta-networking \
+  ${METAPATH}/meta-openembedded/meta-python \
+  ${METAPATH}/meta-openembedded/meta-filesystems \
+  ${METAPATH}/meta-virtualization \
   ${METAPATH}/meta-tegra \
   ${METAPATH}/meta-tegra/contrib \
   ${METAPATH}/meta-sol \
