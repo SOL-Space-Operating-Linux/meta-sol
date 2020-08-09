@@ -11,5 +11,4 @@ RDEPENDS_${PN} = " \
     bash util-linux \
     nano vim git curl wget \
     unzip usbutils \
-    rt-tests \
 "
