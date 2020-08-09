@@ -66,7 +66,7 @@ oe_mkext234fs () {
 		for item in $name $size; do
 			printf $item >> ${IMAGE_ROOTFS_TMP}/info
 			len=${#item}
-			while [ $len -lt 60 ]; do
+			while [ $len -lt 100 ]; do
 				#Pad with null characters so every entity is 20 bytes
 				printf '\0' >> ${IMAGE_ROOTFS_TMP}/info 
 				len=`expr $len + 1`
