@@ -31,7 +31,7 @@ index 23bb81e88c..e653b80deb 100644
  /*
   * Store the resulting sum to an address or variable
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..c9299d7649 100644
+index 2116a9e0a2..1320c5bc39 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -11,7 +11,9 @@
@@ -52,20 +52,20 @@ index 2116a9e0a2..c9299d7649 100644
 +	printf("Reading filenames from info file\n");
 +	fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
 +	loff_t actread;
-+	fs_read("info", 0x84000000, 0, 360, &actread);
++	fs_read("info", 0x84000000, 0, 600, &actread);
 +	printf("Read %lld of 360 bytes\n", actread);
-+	char *all_names = (char *)map_sysmem(0x84000000, 360);
++	char *all_names = (char *)map_sysmem(0x84000000, 600);
 +
 +	for (int i = 0; i < 6; i ++) {
-+		tmr_names[i] = (char *)malloc(60);
-+		memcpy(tmr_names[i], all_names+60*i, 60);
++		tmr_names[i] = (char *)malloc(100);
++		memcpy(tmr_names[i], all_names+100*i, 100);
 +	}
 +
 +	for(int i = 0; i < 3; i ++){
-+		char file1[70] = "/boot/";
-+		char file2[70] = "/boot1/";
-+		char file3[70] = "/boot2/";
-+		char hash[70] = "/boothash/";
++		char file1[110] = "/boot/";
++		char file2[110] = "/boot1/";
++		char file3[110] = "/boot2/";
++		char hash[110] = "/boothash/";
 +		strcat(file1, tmr_names[2*i]);
 +		strcat(file2, tmr_names[2*i]);
 +		strcat(file3, tmr_names[2*i]);
@@ -83,10 +83,10 @@ index 2116a9e0a2..c9299d7649 100644
  	cli_loop();
 diff --git a/common/tmr.c b/common/tmr.c
 new file mode 100644
-index 0000000000..bc58f021cf
+index 0000000000..5ae5bec3e2
 --- /dev/null
 +++ b/common/tmr.c
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,118 @@
 +#include <common.h>
 +#include <console.h>
 +#include <bootretry.h>
@@ -106,8 +106,8 @@ index 0000000000..bc58f021cf
 +		fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
 +		loff_t actread;
 +		if(i % 2) {
-+			fs_read(files[i], locations[i], 0, 16, &actread);
-+			printf("Read %lld of 16 bytes from %s\n", actread, files[i]);
++			fs_read(files[i], locations[i], 0, 32, &actread);
++			printf("Read %lld of 32 bytes from %s\n", actread, files[i]);
 +		} else {
 +			fs_read(files[i], locations[i], 0, filesize, &actread);
 +			printf("Read %lld of %lld bytes from %s\n", actread, filesize, files[i]);
@@ -116,31 +116,23 @@ index 0000000000..bc58f021cf
 +}
 +
 +int check_hash(int file) {
-+	unsigned char calculated_sum[16], stored_sum[16];
++	unsigned char calculated_sum[16], tmp[2];
 +	
 +	void *buf = map_sysmem(locations[file*2], filesize);
 +	md5_wd(buf, filesize, calculated_sum, 64 << 10);
 +	unmap_sysmem(buf);
 +
-+	buf = map_sysmem(locations[file*2+1], 16);
-+	memcpy(stored_sum, (u8 *)buf, 16);
-+	unmap_sysmem(buf);
++	buf = map_sysmem(locations[file*2+1], 32);
 +
 +	for (int i = 0; i < 16; i++) {
-+		if (stored_sum[i] != calculated_sum[i]) {
-+			printf("Stored hash was ");
-+			for (int j = 0; j < 16; j++) {
-+				printf("%x", stored_sum[j]);
-+			}
-+			printf(" but calculated hash was ");
-+			for (int j = 0; j < 16; j++) {
-+				printf("%x", calculated_sum[j]);
-+			}
-+			printf("\n");
++		memcpy(tmp, (u8 *)buf + 2*i, 2);
++		if (simple_strtoul(tmp, NULL, 16) != calculated_sum[i]) {
++			unmap_sysmem(buf);
 +			return 0;
 +		}
 +	}
 +
++	unmap_sysmem(buf);
 +	return 1;
 +}
 +
