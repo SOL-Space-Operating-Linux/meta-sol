@@ -114,8 +114,6 @@ MACHINE="jetson-tx2i"
 NVIDIA_DEVNET_MIRROR = "file:///home/$USER$/Downloads/nvidia/sdkm_downloads"
 
 CUDA_VERSION = "10.0"
-GCCVERSION = "7.%"
-require contrib/conf/include/gcc-compat.conf
 ```
 There are a few options listed that will make development testing easier, they should be removed in the final build version.
 
