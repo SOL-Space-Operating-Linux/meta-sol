@@ -8,6 +8,11 @@ RDEPENDS_${PN} = " \
     telegraf \
     stress-ng \
     rt-tests \
-    lm-sensors \
     memtester \
+    tegra-pwrmon \
+    lmsensors-libsensors \
+    lmsensors-sensord \
+    lmsensors-sensors \
+    lmsensors-sensorsconfconvert \
+    lmsensors-sensorsdetect \
 "

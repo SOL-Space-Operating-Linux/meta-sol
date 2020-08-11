@@ -1,0 +1,14 @@
+[Unit]
+Description=Syncs time to laptop on boot
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash /usr/bin/sync_time.sh
+ExecStop=
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
