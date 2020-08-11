@@ -206,6 +206,20 @@ index 0000000000..5ae5bec3e2
 +	printf("Wrote tmr result with size %lld of %lld back to %s\n", actwrite, filesize, files[0]);
 +}
 \ No newline at end of file
+diff --git a/fs/ext4/ext4_journal.c b/fs/ext4/ext4_journal.c
+index b40916b421..05908b9448 100644
+--- a/fs/ext4/ext4_journal.c
++++ b/fs/ext4/ext4_journal.c
+@@ -409,6 +409,9 @@ int ext4fs_check_journal_state(int recovery_flag)
+ 	char *temp_buff1 = NULL;
+ 	struct ext_filesystem *fs = get_fs();
+ 
++	if (le32_to_cpu(fs->sb->feature_ro_compat) & 0x0400)
++		return 0;
++
+ 	temp_buff = zalloc(fs->blksz);
+ 	if (!temp_buff)
+ 		return -ENOMEM;
 diff --git a/include/configs/p2771-0000.h b/include/configs/p2771-0000.h
 index 1c8981b16f..ee863a557f 100644
 --- a/include/configs/p2771-0000.h
