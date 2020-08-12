@@ -84,7 +84,7 @@ oe_mkext234fs () {
 	cd -
 
     bbdebug 1 Executing "mkfs.$fstype -F $extra_imagecmd ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live -d ${IMAGE_ROOTFS_TMP}"
-	mkfs.$fstype -F $extra_imagecmd ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live -d ${IMAGE_ROOTFS_TMP}
+	mkfs.$fstype -F -O ^metadata_csum $extra_imagecmd ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live -d ${IMAGE_ROOTFS_TMP}
 	# Error codes 0-3 indicate successfull operation of fsck (no errors or errors corrected)
 	fsck.$fstype -pvfD ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live || [ $? -le 3 ]
 }
