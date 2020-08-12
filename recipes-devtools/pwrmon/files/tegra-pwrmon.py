@@ -4,9 +4,7 @@ import os
 
 
 influx_url = 'http://192.168.1.110:8086'
-
-#hostname grab is not working, possibly need to try socket.gethostname()
-unit_id = os.environ['HOSTNAME']
+unit_id = os.uname()[1]
 
 current_input_list=[
 "in_current0_input",
@@ -38,7 +36,7 @@ def read_input(current_name, decimator, unit):
 
 while True:
   for input in current_input_list:
-    line = read_input(input, 10, 'mAmps')
+    line = read_input(input, 1, 'mAmps')
     print(line)
     try:
       resp = requests.post(influx_url+'/write?db=TX2i_db', data=line)
@@ -54,7 +52,7 @@ while True:
     except:
      print("Unable to connect")
   for input in power_input_list:
-    line = read_input(input, 10000, 'Watts')
+    line = read_input(input, 1000, 'Watts')
     print(line)
     try:
       resp = requests.post(influx_url+'/write?db=TX2i_db', data=line)
@@ -63,6 +61,6 @@ while True:
      print("Unable to connect")
 
 
-  time.sleep(.01)
+  time.sleep(.1)
 line.close()
 

@@ -14,5 +14,4 @@ RDEPENDS_${PN} = " \
     lmsensors-sensord \
     lmsensors-sensors \
     lmsensors-sensorsconfconvert \
-    lmsensors-sensorsdetect \
 "

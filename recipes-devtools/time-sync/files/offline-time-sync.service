@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/bash /usr/bin/sync_time.sh
+ExecStart=/bin/bash /usr/bin/sync_time.bash
 ExecStop=
 TimeoutStartSec=0
 

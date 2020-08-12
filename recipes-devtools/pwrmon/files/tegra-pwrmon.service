@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/bin/python3 tegra-pwrmon.py
+ExecStart=/usr/bin/python3 /usr/bin/tegra-pwrmon.py
 ExecStop=
 TimeoutStartSec=0
 
