@@ -4,7 +4,9 @@ LICENSE = "MIT"
 
 
 IMAGE_CLASSES += "image_types_tegralive"
+
 IMAGE_TEGRAFLASH_FS_TYPE = "ext4.live"
+
 #remove this line if you want a faster larger build (just tar, no xz)
 LIVE_IMAGE_COMPRESSION = "xz" 
 

@@ -1,5 +1,7 @@
 inherit image_types pythonnative perlnative
 
+
+
 IMAGE_TYPES += "ext4.live"
 LIVE_IMAGE_COMPRESSION ?= "none"
 
@@ -41,7 +43,7 @@ oe_mkext234fs () {
     bbdebug 1 "tar -cJf ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar --numeric-owner -C ${IMAGE_ROOTFS} . || [ $? -eq 1 ]"
 
 	#Choose your compression algorithm here
-	if [ ${LIVE_IMAGE_COMPRESSION} -eq "xz" ]; then
+	if [ ${LIVE_IMAGE_COMPRESSION} == "xz" ]; then
     	tar -cJf ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar --numeric-owner -C ${IMAGE_ROOTFS} . || [ $? -eq 1 ]
 	else
 		tar -cf ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar --numeric-owner -C ${IMAGE_ROOTFS} . || [ $? -eq 1 ]
@@ -82,7 +84,7 @@ oe_mkext234fs () {
 	cd -
 
     bbdebug 1 Executing "mkfs.$fstype -F $extra_imagecmd ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live -d ${IMAGE_ROOTFS_TMP}"
-	mkfs.$fstype -F $extra_imagecmd ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live -d ${IMAGE_ROOTFS_TMP}
+	mkfs.$fstype -F -O ^metadata_csum $extra_imagecmd ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live -d ${IMAGE_ROOTFS_TMP}
 	# Error codes 0-3 indicate successfull operation of fsck (no errors or errors corrected)
 	fsck.$fstype -pvfD ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live || [ $? -le 3 ]
 }
