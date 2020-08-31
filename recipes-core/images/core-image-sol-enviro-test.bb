@@ -13,7 +13,7 @@ require core-image-sol.bb
 # NVIDIA_DEVNET_MIRROR = "file:///home/$USER$/Downloads/nvidia/sdkm_downloads"
 
 # Development features
-IMAGE_FEATURES += "ssh-server-dropbear post-install-logging \
+IMAGE_FEATURES += "ssh-server-openssh post-install-logging \
     debug-tweaks dbg-pkgs \
 "
 

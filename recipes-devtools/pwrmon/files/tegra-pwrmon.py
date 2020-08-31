@@ -37,26 +37,26 @@ def read_input(current_name, decimator, unit):
 while True:
   for input in current_input_list:
     line = read_input(input, 1, 'mAmps')
-    print(line)
+    #print(line)
     try:
       resp = requests.post(influx_url+'/write?db=TX2i_db', data=line)
-      print(resp)
+      #print(resp)
     except:
      print("Unable to connect")
   for input in voltage_input_list:
     line = read_input(input, 1000, 'Volts')
-    print(line)
+    #print(line)
     try:
       resp = requests.post(influx_url+'/write?db=TX2i_db', data=line)
-      print(resp)
+      #print(resp)
     except:
      print("Unable to connect")
   for input in power_input_list:
     line = read_input(input, 1000, 'Watts')
-    print(line)
+    #print(line)
     try:
       resp = requests.post(influx_url+'/write?db=TX2i_db', data=line)
-      print(resp)
+      #print(resp)
     except:
      print("Unable to connect")
 

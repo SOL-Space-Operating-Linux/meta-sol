@@ -1,5 +1,5 @@
 [Unit]
-Description=Syncs time to laptop on boot
+Description=Starts TX2i power monitoring on boot
 Requires=network-online.target
 After=network-online.target
 
