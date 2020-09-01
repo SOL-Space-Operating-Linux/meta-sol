@@ -1,6 +1,8 @@
 #!/bin/bash
 
-set_db_flag.sh "stress=0"
+mkdir -p logs
+
+set_db_flag.sh "stress-ng=0"
 set_db_flag.sh "rt=0"
 set_db_flag.sh "gpu=0"
 set_db_flag.sh "memtester=0"
@@ -15,7 +17,7 @@ set_db_flag.sh "badblocks=0"
 
 #complete a memtest
 set_db_flag.sh "memtester=1"
-memtester 1M | tee "logs/${LOG_TIME}_badblocks.out"
+memtester 1M 1 | tee "logs/${LOG_TIME}_memtester.out"
 set_db_flag.sh "memtester=0"
 
 #GPU Checkout
@@ -33,12 +35,12 @@ rt-migrate-test | tee "logs/${LOG_TIME}_rt-mitigate-test.out"
 set_db_flag.sh "rt=0"
 
 #Stress test
-set_db_flag.sh "stress=0"
+set_db_flag.sh "stress-ng=0"
 stress-ng --cpu 8 --io 4 --vm 2 --vm-bytes 1G --fork 4 --timeout 60s | tee "logs/${LOG_TIME}_stress-ng.out"
-set_db_flag.sh "stress=0"
+set_db_flag.sh "stress-ng=0"
 
 set_db_flag.sh "enviro_test_short=0"
-set_db_flag.sh "stress=0"
+set_db_flag.sh "stress-ng=0"
 set_db_flag.sh "rt=0"
 set_db_flag.sh "gpu=0"
 set_db_flag.sh "memtester=0"
