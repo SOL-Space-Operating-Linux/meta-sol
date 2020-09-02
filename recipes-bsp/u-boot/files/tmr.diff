@@ -31,62 +31,120 @@ index 23bb81e88c..e653b80deb 100644
  /*
   * Store the resulting sum to an address or variable
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..1320c5bc39 100644
+index 2116a9e0a2..8d1a02eb21 100644
 --- a/common/main.c
 +++ b/common/main.c
-@@ -11,7 +11,9 @@
+@@ -11,7 +11,10 @@
  #include <autoboot.h>
  #include <cli.h>
  #include <console.h>
 +#include <malloc.h>
  #include <version.h>
 +#include <../common/tmr.c>
++#include <command.h>
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +65,36 @@ void main_loop(void)
+@@ -63,6 +66,93 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
-+	char *tmr_names[6];
-+	printf("Reading filenames from info file\n");
-+	fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
-+	loff_t actread;
-+	fs_read("info", 0x84000000, 0, 600, &actread);
-+	printf("Read %lld of 360 bytes\n", actread);
-+	char *all_names = (char *)map_sysmem(0x84000000, 600);
++	if(fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT))
++	{
++		// error: no file system --> Assume BLOB
++		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 91003, 91004, 96004};
++		ulong part_offset[3] = {4104, 4104, 4104};
++		ulong outputs[4] = {0xa5000000, 0xa5001000, 0xa9000000, 0xb0000000};
++		ulong sizes[4];
++		sizes[0] = 45; //info file
++		char *safe = "s=---";
 +
-+	for (int i = 0; i < 6; i ++) {
-+		tmr_names[i] = (char *)malloc(100);
-+		memcpy(tmr_names[i], all_names+100*i, 100);
++		printf("TMRing info files");
++		tmr_blob(
++			part_offset[0] + file_offset[0],
++			part_offset[0] + file_offset[1],
++			part_offset[1] + file_offset[0],
++			part_offset[1] + file_offset[1],
++			part_offset[2] + file_offset[0],
++			part_offset[2] + file_offset[1],
++			sizes[0], outputs[0]);
++		
++		printf("Reading info for filesizes");
++		char tmp[15];
++		char *info = (char *)map_sysmem(locations[0], 45);
++		for (int i = 0; i < 3; i ++) {
++			memcpy(tmp, info + 15 * i, 15);
++			sizes[i+1] = simple_strtoul(tmp, NULL, 10);
++		}
++		unmap_sysmem((const void*) info);
++
++		for (int i = 1; i < 4; i ++) {
++			printf("TMRing file #%d of size %lu", i, sizes[i]);
++			if(
++				!tmr_blob(
++					part_offset[0] + file_offset[2*i],
++					part_offset[0] + file_offset[2*i+1],
++					part_offset[1] + file_offset[2*i],
++					part_offset[1] + file_offset[2*i+1],
++					part_offset[2] + file_offset[2*i],
++					part_offset[2] + file_offset[2*i+1],
++					sizes[i], outputs[i])
++			) {
++				// pass info to kernel
++				safe[i+1] = 'x';
++			}
++		}
++
++		setenv("bootargs", safe);
++
++		char *argv[4] = {" ", "a5001000", "b0000000", "a9000000"};
++		do_bootm(NULL, 0, 4, argv);
++
++	} 
++	else
++	{
++		char *tmr_names[6];
++		printf("Reading filenames from info file\n");
++		loff_t actread;
++		fs_read("info", 0x84000000, 0, 600, &actread);
++		printf("Read %lld of 600 bytes\n", actread);
++		char *all_names = (char *)map_sysmem(0x84000000, 600);
++
++		for (int i = 0; i < 6; i ++) {
++			tmr_names[i] = (char *)malloc(100);
++			memcpy(tmr_names[i], all_names+100*i, 100);
++		}
++
++		for(int i = 0; i < 3; i ++){
++			char file1[110] = "/boot/";
++			char file2[110] = "/boot1/";
++			char file3[110] = "/boot2/";
++			char hash[110] = "/boothash/";
++			strcat(file1, tmr_names[2*i]);
++			strcat(file2, tmr_names[2*i]);
++			strcat(file3, tmr_names[2*i]);
++			strcat(hash, tmr_names[2*i]);
++			char * const tmr_files[] = {file1, hash, file2, hash, file3, hash};
++			loff_t tmr_size = (loff_t) simple_strtoul(tmr_names[2*i+1], NULL, 10);
++			printf("Redundancy for %s, %s, %s, %s with size %lld\n", file1, file2, file3, hash, tmr_size);
++			tmr_fs(tmr_files, tmr_size); 
++		}
++
++		unmap_sysmem((const void *)all_names);
 +	}
++	
 +
-+	for(int i = 0; i < 3; i ++){
-+		char file1[110] = "/boot/";
-+		char file2[110] = "/boot1/";
-+		char file3[110] = "/boot2/";
-+		char hash[110] = "/boothash/";
-+		strcat(file1, tmr_names[2*i]);
-+		strcat(file2, tmr_names[2*i]);
-+		strcat(file3, tmr_names[2*i]);
-+		strcat(hash, tmr_names[2*i]);
-+		char * const tmr_files[] = {file1, hash, file2, hash, file3, hash};
-+		loff_t tmr_size = (loff_t) simple_strtoul(tmr_names[2*i+1], NULL, 10);
-+		printf("Redundancy for %s, %s, %s, %s with size %lld\n", file1, file2, file3, hash, tmr_size);
-+		tmr(tmr_files, tmr_size); 
-+	}
-+
-+	unmap_sysmem((const void *)all_names);
++	
 +
  	autoboot_command(s);
  
  	cli_loop();
 diff --git a/common/tmr.c b/common/tmr.c
 new file mode 100644
-index 0000000000..5ae5bec3e2
+index 0000000000..a70eaf3b7b
 --- /dev/null
 +++ b/common/tmr.c
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,202 @@
 +#include <common.h>
 +#include <console.h>
 +#include <bootretry.h>
@@ -97,6 +155,8 @@ index 0000000000..5ae5bec3e2
 +#include <watchdog.h>
 +#include <fs.h>
 +#include <u-boot/md5.h>
++#include <blk.h>
++#include <mmc.h>
 +
 +loff_t filesize;
 +ulong locations[7] = {0x85000000,0x89000000,0x90000000,0x94000000,0x95000000,0x99000000,0xa0000000};
@@ -115,6 +175,50 @@ index 0000000000..5ae5bec3e2
 +	}
 +}
 +
++static void load_blobs_with_hashes(
++	ulong file1, ulong hash1, 
++	ulong file2, ulong hash2,
++	ulong file3, ulong hash3
++)
++{
++	struct mmc *mmc;
++	mmc->block_dev.blksz = 512;
++	mmc->block_dev.devnum = 0;
++	mmc->block_dev.if_type = IF_TYPE_MMC;
++
++	u32 cnt = filesize / 512 + 1;
++
++	void *addr = (void *)locations[0];
++	ulong n = blk_dread(mmc_get_blk_desc(mmc), file1, cnt, addr);
++	flush_cache((ulong)addr, cnt * 512);
++	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
++
++	addr = (void *)locations[1];
++	n = blk_dread(mmc_get_blk_desc(mmc), hash1, 1, addr);
++	flush_cache((ulong)addr, 512);
++	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
++
++	addr = (void *)locations[2];
++	n = blk_dread(mmc_get_blk_desc(mmc), file2, cnt, addr);
++	flush_cache((ulong)addr, cnt * 512);
++	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
++
++	addr = (void *)locations[3];
++	n = blk_dread(mmc_get_blk_desc(mmc), hash2, 1, addr);
++	flush_cache((ulong)addr, 512);
++	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
++
++	addr = (void *)locations[4];
++	n = blk_dread(mmc_get_blk_desc(mmc), file3, cnt, addr);
++	flush_cache((ulong)addr, cnt * 512);
++	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
++
++	addr = (void *)locations[5];
++	n = blk_dread(mmc_get_blk_desc(mmc), hash3, 1, addr);
++	flush_cache((ulong)addr, 512);
++	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
++}
++
 +int check_hash(int file) {
 +	unsigned char calculated_sum[16], tmp[2];
 +	
@@ -126,7 +230,7 @@ index 0000000000..5ae5bec3e2
 +
 +	for (int i = 0; i < 16; i++) {
 +		memcpy(tmp, (u8 *)buf + 2*i, 2);
-+		if (simple_strtoul(tmp, NULL, 16) != calculated_sum[i]) {
++		if(simple_strtoul(tmp, NULL, 16) != calculated_sum[i]) {
 +			unmap_sysmem(buf);
 +			return 0;
 +		}
@@ -178,7 +282,7 @@ index 0000000000..5ae5bec3e2
 +
 +}
 +
-+static void tmr(char * const files[], loff_t size) {
++static void tmr_fs(char * const files[], loff_t size) {
 +	filesize = size;
 +	load_files_with_hashes(files);
 +	loff_t actwrite;
@@ -205,21 +309,45 @@ index 0000000000..5ae5bec3e2
 +	fs_write(files[0], locations[6], 0, filesize, &actwrite);
 +	printf("Wrote tmr result with size %lld of %lld back to %s\n", actwrite, filesize, files[0]);
 +}
-\ No newline at end of file
-diff --git a/fs/ext4/ext4_journal.c b/fs/ext4/ext4_journal.c
-index b40916b421..05908b9448 100644
---- a/fs/ext4/ext4_journal.c
-+++ b/fs/ext4/ext4_journal.c
-@@ -409,6 +409,9 @@ int ext4fs_check_journal_state(int recovery_flag)
- 	char *temp_buff1 = NULL;
- 	struct ext_filesystem *fs = get_fs();
- 
-+	if (le32_to_cpu(fs->sb->feature_ro_compat) & 0x0400)
-+		return 0;
 +
- 	temp_buff = zalloc(fs->blksz);
- 	if (!temp_buff)
- 		return -ENOMEM;
++static void write_output(ulong input, ulong output) {
++	memcpy((void *)output, (void *)input, filesize);
++}
++
++static bool tmr_blob(
++	ulong file1, ulong hash1, 
++	ulong file2, ulong hash2,
++	ulong file3, ulong hash3,
++	ulong bytes, ulong output)
++{
++	filesize = bytes;
++	
++	load_blobs_with_hashes(file1, hash1, file2, hash2, file3, hash3);
++	printf("loaded files with hashes\n");
++	if (check_hash(0)) {
++		printf("hash for original file was correct\n");
++		write_output(locations[0], output);
++		return true;
++	} else if (check_hash(1)) {
++		fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
++		printf("hash for first backup was correct\n");
++		write_output(locations[2], output);
++		return false;
++	} else if (check_hash(2)) {
++		fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
++		printf("hash for second backup was correct\n");
++		write_output(locations[4], output);
++		return false;
++	}
++
++	printf("none of the hashes were correct. storing tmr result at 0xa0000000\n");
++
++	majority_wd(locations[0], locations[2], locations[4], locations[6], filesize);
++	fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
++	write_output(locations[6], output);
++	return false;
++}
+\ No newline at end of file
 diff --git a/include/configs/p2771-0000.h b/include/configs/p2771-0000.h
 index 1c8981b16f..ee863a557f 100644
 --- a/include/configs/p2771-0000.h
