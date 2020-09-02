@@ -9,6 +9,7 @@ SRC_URI = "\
     file://enviro_test_short.bash \
     file://enviro_test_long.bash \
     file://enviro_stress.bash \
+    file://start_logging.sh \
     file://set_db_flag.sh"
 
 S = "${WORKDIR}"
@@ -25,6 +26,7 @@ do_install() {
     install -m 0755 ${WORKDIR}/enviro_test_long.bash ${D}/usr/bin/
     install -m 0755 ${WORKDIR}/enviro_stress.bash ${D}/usr/bin/
     install -m 0755 ${WORKDIR}/set_db_flag.sh ${D}/usr/bin/
+    install -m 0755 ${WORKDIR}/start_logging.sh ${D}/usr/bin/
     
 }
 

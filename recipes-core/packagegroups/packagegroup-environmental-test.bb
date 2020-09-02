@@ -3,8 +3,6 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 inherit packagegroup
 
-COMMON_FEATURES_remove = "ssh-server-dropbear"
-
 RDEPENDS_${PN} = " \
     go-runtime \
     telegraf \
