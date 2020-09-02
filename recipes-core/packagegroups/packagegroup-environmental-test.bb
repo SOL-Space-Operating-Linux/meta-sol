@@ -14,6 +14,7 @@ RDEPENDS_${PN} = " \
     e2fsprogs \
     tegra-pwrmon \
     offline-time-sync \
+    net-tools \
     cuda-samples \
     enviro-test \
     lmsensors-libsensors \
