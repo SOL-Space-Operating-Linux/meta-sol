@@ -31,7 +31,7 @@ index 23bb81e88c..e653b80deb 100644
  /*
   * Store the resulting sum to an address or variable
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..8d1a02eb21 100644
+index 2116a9e0a2..6a2a62e016 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -11,7 +11,10 @@
@@ -45,7 +45,7 @@ index 2116a9e0a2..8d1a02eb21 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +66,93 @@ void main_loop(void)
+@@ -63,6 +66,97 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
@@ -57,17 +57,21 @@ index 2116a9e0a2..8d1a02eb21 100644
 +		ulong outputs[4] = {0xa5000000, 0xa5001000, 0xa9000000, 0xb0000000};
 +		ulong sizes[4];
 +		sizes[0] = 45; //info file
-+		char *safe = "s=---";
++		char *safe = "s=----";
 +
 +		printf("TMRing info files");
-+		tmr_blob(
-+			part_offset[0] + file_offset[0],
-+			part_offset[0] + file_offset[1],
-+			part_offset[1] + file_offset[0],
-+			part_offset[1] + file_offset[1],
-+			part_offset[2] + file_offset[0],
-+			part_offset[2] + file_offset[1],
-+			sizes[0], outputs[0]);
++		if(
++			tmr_blob(
++				part_offset[0] + file_offset[0],
++				part_offset[0] + file_offset[1],
++				part_offset[1] + file_offset[0],
++				part_offset[1] + file_offset[1],
++				part_offset[2] + file_offset[0],
++				part_offset[2] + file_offset[1],
++				sizes[0], outputs[0])
++		) {
++			safe[2] = 'x';
++		}
 +		
 +		printf("Reading info for filesizes");
 +		char tmp[15];
@@ -91,7 +95,7 @@ index 2116a9e0a2..8d1a02eb21 100644
 +					sizes[i], outputs[i])
 +			) {
 +				// pass info to kernel
-+				safe[i+1] = 'x';
++				safe[i+2] = 'x';
 +			}
 +		}
 +
@@ -141,7 +145,7 @@ index 2116a9e0a2..8d1a02eb21 100644
  	cli_loop();
 diff --git a/common/tmr.c b/common/tmr.c
 new file mode 100644
-index 0000000000..a70eaf3b7b
+index 0000000000..aca3ffa3d2
 --- /dev/null
 +++ b/common/tmr.c
 @@ -0,0 +1,202 @@
@@ -196,7 +200,7 @@ index 0000000000..a70eaf3b7b
 +	addr = (void *)locations[1];
 +	n = blk_dread(mmc_get_blk_desc(mmc), hash1, 1, addr);
 +	flush_cache((ulong)addr, 512);
-+	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
++	printf("%lu blocks read: %s\n", n, (n == 1) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[2];
 +	n = blk_dread(mmc_get_blk_desc(mmc), file2, cnt, addr);
@@ -206,7 +210,7 @@ index 0000000000..a70eaf3b7b
 +	addr = (void *)locations[3];
 +	n = blk_dread(mmc_get_blk_desc(mmc), hash2, 1, addr);
 +	flush_cache((ulong)addr, 512);
-+	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
++	printf("%lu blocks read: %s\n", n, (n == 1) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[4];
 +	n = blk_dread(mmc_get_blk_desc(mmc), file3, cnt, addr);
@@ -216,7 +220,7 @@ index 0000000000..a70eaf3b7b
 +	addr = (void *)locations[5];
 +	n = blk_dread(mmc_get_blk_desc(mmc), hash3, 1, addr);
 +	flush_cache((ulong)addr, 512);
-+	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
++	printf("%lu blocks read: %s\n", n, (n == 1) ? "OK" : "ERROR");
 +}
 +
 +int check_hash(int file) {
