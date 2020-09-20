@@ -3,9 +3,9 @@ SUMMARY = "SOL core development image"
 LICENSE = "MIT"
 
 
-IMAGE_CLASSES += "image_types_tegralive"
+IMAGE_CLASSES += "image_types_tegralive_blob"
 
-IMAGE_TEGRAFLASH_FS_TYPE = "ext4.live"
+IMAGE_TEGRAFLASH_FS_TYPE = "blob"
 
 #remove this line if you want a faster larger build (just tar, no xz)
 LIVE_IMAGE_COMPRESSION = "xz" 
