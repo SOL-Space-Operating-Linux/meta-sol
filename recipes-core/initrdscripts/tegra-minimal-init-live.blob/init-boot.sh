@@ -17,26 +17,20 @@ rootdev=""
 opt="rw"
 wait=""
 start_boot_partition="1"
+tar_offset="96005"
 
 function mount_and_checksum() {
 	echo "Mounting ${1} at /mnt/rootfs" > /dev/kmsg
 	mkdir -p /mnt/rootfs
-	mount -t ext4 -o "$opt" "${1}" /mnt/rootfs
+	head -c 60 $1 | tail -c 15
+	dd if=$1 of=/mnt/rootfs/live_rootfs.tar bs=512 skip=$tar_offset 
 	mount_rc=$?
 	if [ ${mount_rc} -eq 0 ]; then
-		cd /mnt/rootfs/
-		sha256sum -c live_rootfs.sha256
-		checksum_rc=$?
 		cd /
-		if [ ${checksum_rc} -eq 0 ]; then
-			extract_and_boot /mnt/rootfs/live_rootfs.tar
-			umount /mnt/ramdisk
-			umount /mnt/rootfs
-			mount -t tmpfs -o size=${ROOTFSPART_SIZE} tmpfs /mnt/ramdisk
-		else
-			echo "Sha256 checksum failed for ${1} with code (${checksum_rc}), switching sides" > /dev/kmsg
-			unmount /mnt/rootfs
-		fi
+		extract_and_boot /mnt/rootfs/live_rootfs.tar
+		umount /mnt/ramdisk
+		umount /mnt/rootfs
+		mount -t tmpfs -o size=${ROOTFSPART_SIZE} tmpfs /mnt/ramdisk
 	else
 		echo "Unable to mount ${1} with code (${mount_rc}), switching sides" > /dev/kmsg
 		umount /mnt/rootfs
@@ -84,8 +78,64 @@ if [ -n "$wait" -a ! -b "${rootdev}" ]; then
 fi
 
 
-num_paritions="2"
+num_paritions="3"
 boot_partition=${start_boot_partition}
+
+
+#do majority vote here
+skips=(0 2 90003 91004 96005) #blocks
+hash_skips=(1 90002 91003 96004 1596008) #blocks
+sizes=(60) #bytes
+counts=(1 90000 1000 5000 1500000) #blocks
+
+for i in {1..5}; do
+	good=(0 0 0)
+
+	for j in {1..3}; do
+		calculated=$(dd if="/dev/mmcblk0p${j}" skip=$skips[$i] count=$counts[$i] 2>/dev/null | head -c $sizes[$i] | md5sum | head -c 32)
+		existing=$(dd if="/dev/mmcblk0p${j}" skip=$hash_skips[$i] count=1 2>/dev/null | head -c 32)
+		if [ $calculated = $existing ]; then
+			$good[$j]=1
+		fi
+	done
+
+	if [ "$good" = "0 0 0" ]; then
+		boot-tmr $sizes[$i] $skips[$i] /dev/mmcblk0p1 /dev/mmcblk0p2 /dev/mmcblk0p3
+	elif [ "$good" != "1 1 1" ]; then
+		# find good copy
+		if [ $good[1] = 1 ]; then
+			g=1
+		elif [ $good[2] = 1 ]; then
+			g=2
+		else
+			g=3
+		fi
+
+		# replace bad copy/copies
+		for c in {1..3}; do
+			if [ $good[$c] = 0 ]; then
+				dd if="/dev/mmcblk0p${g}" of="/dev/mmcblk0p${c}" skip=$skips[$i] seek=$skips[$i] count=$counts[$i]
+			fi
+		done
+	fi
+
+	# replace hashes
+	echo $(dd if="/dev/mmcblk0p1" skip=$skips[$i] count=$counts[$i] 2>/dev/null | head -c $sizes[$i] | md5sum | head -c 32) > md5.txt
+	for j in {1..3}; do
+		echo $(dd if=md5.txt of="/dev/mmcblk0p{$j}" seek=$hash_skips[$i] count=1 2>/dev/null | head -c 32)
+	done
+
+
+	if [ $i = 1 ]; then
+		# fill in sizes after info is done
+		sizes+=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 15 | tail -c 15)
+		sizes+=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 30 | tail -c 15)
+		sizes+=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 45 | tail -c 15)
+		sizes+=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 60 | tail -c 15)
+	fi
+done
+
+# boot-tmr $size $skip $file1 $file2 $file3
 
 while true; do
 	boot_device="/dev/mmcblk0p${boot_partition}"

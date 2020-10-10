@@ -15,6 +15,17 @@ PACKAGE_INSTALL = "\
     ${TEGRA_INITRD_INSTALL} \
 "
 
+SRC_URI = "file://boot-tmr.c"
+
+do_compile() {
+         ${CC} boot-tmr.c -o boot-tmr
+}
+
+do_install() {
+         install -d ${D}${bindir}
+         install -m 0755 boot-tmr ${D}${bindir}
+}
+
 IMAGE_FEATURES = ""
 IMAGE_LINGUAS = ""
 
