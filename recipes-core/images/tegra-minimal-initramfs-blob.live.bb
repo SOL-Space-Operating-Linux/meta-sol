@@ -9,22 +9,11 @@ TEGRA_INITRD_BASEUTILS ?= "busybox"
 PACKAGE_INSTALL = "\
     tegra-firmware-xusb \
     tegra-minimal-init-live.blob \
-    xz tar \
+    xz tar boot-tmr \
     ${TEGRA_INITRD_BASEUTILS} \
     ${ROOTFS_BOOTSTRAP_INSTALL} \
     ${TEGRA_INITRD_INSTALL} \
 "
-
-SRC_URI = "file://boot-tmr.c"
-
-do_compile() {
-         ${CC} boot-tmr.c -o boot-tmr
-}
-
-do_install() {
-         install -d ${D}${bindir}
-         install -m 0755 boot-tmr ${D}${bindir}
-}
 
 IMAGE_FEATURES = ""
 IMAGE_LINGUAS = ""
