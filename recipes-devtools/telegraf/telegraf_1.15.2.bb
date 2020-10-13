@@ -14,19 +14,12 @@ COMPATIBLE_HOST = "aarch64-poky-linux"
 
 S = "${WORKDIR}/telegraf-${PV}/"
 
-inherit bin_package distro_features_check systemd
-REQUIRED_DISTRO_FEATURES = "systemd"
+inherit bin_package
 
 do_install_append() {
-    install -d ${D}${systemd_system_unitdir}
-    sed -e '/User=telegraf/d; /\[Unit\]/aConditionPathExists=/etc/telegraf/telegraf.conf' <${D}/usr/lib/telegraf/scripts/telegraf.service >${D}${systemd_system_unitdir}/telegraf.service
     rm -r ${D}/var ${D}/etc/logrotate.d ${D}/usr/lib/telegraf \
           ${D}/etc/telegraf/telegraf.conf
     install ${WORKDIR}/telegraf.conf ${D}/etc/telegraf/telegraf.conf
 }
 
 INSANE_SKIP_${PN} = "already-stripped"
-
-SYSTEMD_PACKAGES = "${PN}"
-SYSTEMD_SERVICE_${PN} = "${PN}.service"
-SYSTEMD_AUTO_ENABLE = "enable"

@@ -3,8 +3,6 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 inherit packagegroup
 
-COMMON_FEATURES_remove = "ssh-server-dropbear"
-
 RDEPENDS_${PN} = " \
     go-runtime \
     telegraf \
@@ -14,6 +12,7 @@ RDEPENDS_${PN} = " \
     e2fsprogs \
     tegra-pwrmon \
     offline-time-sync \
+    net-tools \
     cuda-samples \
     enviro-test \
     lmsensors-libsensors \
