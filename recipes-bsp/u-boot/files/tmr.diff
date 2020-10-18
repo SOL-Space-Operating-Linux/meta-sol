@@ -31,7 +31,7 @@ index 23bb81e88c..e653b80deb 100644
  /*
   * Store the resulting sum to an address or variable
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..6a2a62e016 100644
+index 2116a9e0a2..02960fc4b6 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -11,7 +11,10 @@
@@ -45,7 +45,7 @@ index 2116a9e0a2..6a2a62e016 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +66,97 @@ void main_loop(void)
+@@ -63,6 +66,99 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
@@ -53,7 +53,8 @@ index 2116a9e0a2..6a2a62e016 100644
 +	{
 +		// error: no file system --> Assume BLOB
 +		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 91003, 91004, 96004};
-+		ulong part_offset[3] = {4104, 4104, 4104};
++		ulong part_size = 1600000;
++		ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
 +		ulong outputs[4] = {0xa5000000, 0xa5001000, 0xa9000000, 0xb0000000};
 +		ulong sizes[4];
 +		sizes[0] = 45; //info file
@@ -99,7 +100,8 @@ index 2116a9e0a2..6a2a62e016 100644
 +			}
 +		}
 +
-+		setenv("bootargs", safe);
++		// TODO: See if we can find a way to make use of bootargs
++		//setenv("bootargs", safe);
 +
 +		char *argv[4] = {" ", "a5001000", "b0000000", "a9000000"};
 +		do_bootm(NULL, 0, 4, argv);
