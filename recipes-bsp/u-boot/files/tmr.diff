@@ -31,10 +31,10 @@ index 23bb81e88c..e653b80deb 100644
  /*
   * Store the resulting sum to an address or variable
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..b77ce3bea8 100644
+index 2116a9e0a2..3143c4003c 100644
 --- a/common/main.c
 +++ b/common/main.c
-@@ -11,7 +11,10 @@
+@@ -11,7 +11,11 @@
  #include <autoboot.h>
  #include <cli.h>
  #include <console.h>
@@ -42,10 +42,11 @@ index 2116a9e0a2..b77ce3bea8 100644
  #include <version.h>
 +#include <../common/tmr.c>
 +#include <command.h>
++#include <autoboot.c>
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +66,99 @@ void main_loop(void)
+@@ -63,6 +67,104 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
@@ -57,7 +58,7 @@ index 2116a9e0a2..b77ce3bea8 100644
 +		ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
 +		ulong outputs[4] = {0xa5000000, 0xa5001000, 0xa9000000, 0xb0000000};
 +		ulong sizes[4];
-+		sizes[0] = 45; //info file
++		sizes[0] = 60; //info file
 +		char *safe = "s=----";
 +
 +		printf("TMRing info files\n");
@@ -103,8 +104,13 @@ index 2116a9e0a2..b77ce3bea8 100644
 +		// TODO: See if we can find a way to make use of bootargs
 +		//setenv("bootargs", safe);
 +
-+		char *argv[4] = {" ", "a5001000", "b0000000", "a9000000"};
-+		do_bootm(NULL, 0, 4, argv);
++		if(abortboot(5)) {
++			char *argv[4] = {"bootm", "a5001000", "b0000000", "a9000000"};
++			do_bootm(NULL, 0, 4, argv);
++		} else {
++			cli_loop();
++			panic("No CLI available");
++		}
 +
 +	} 
 +	else
