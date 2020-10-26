@@ -31,7 +31,7 @@ oe_mkblobfs () {
 
 	# Populate `info` file with sizes
 	touch ${IMAGE_ROOTFS_TMP}/info
-	for file in boot/u-boot-dtb.bin boot/initrd boot/Image live_rootfs.tar; do
+	for file in boot/Image boot/u-boot-dtb.bin boot/initrd live_rootfs.tar; do
 		size=$(wc -c ${IMAGE_ROOTFS_TMP}/${file} | awk '{print $1}')
 		printf "%015u" $size >> ${IMAGE_ROOTFS_TMP}/info
 	done

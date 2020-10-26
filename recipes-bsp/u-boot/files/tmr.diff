@@ -31,10 +31,10 @@ index 23bb81e88c..e653b80deb 100644
  /*
   * Store the resulting sum to an address or variable
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..6a2a62e016 100644
+index 2116a9e0a2..3143c4003c 100644
 --- a/common/main.c
 +++ b/common/main.c
-@@ -11,7 +11,10 @@
+@@ -11,7 +11,11 @@
  #include <autoboot.h>
  #include <cli.h>
  #include <console.h>
@@ -42,10 +42,11 @@ index 2116a9e0a2..6a2a62e016 100644
  #include <version.h>
 +#include <../common/tmr.c>
 +#include <command.h>
++#include <autoboot.c>
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +66,97 @@ void main_loop(void)
+@@ -63,6 +67,104 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
@@ -53,13 +54,14 @@ index 2116a9e0a2..6a2a62e016 100644
 +	{
 +		// error: no file system --> Assume BLOB
 +		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 91003, 91004, 96004};
-+		ulong part_offset[3] = {4104, 4104, 4104};
++		ulong part_size = 1600000;
++		ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
 +		ulong outputs[4] = {0xa5000000, 0xa5001000, 0xa9000000, 0xb0000000};
 +		ulong sizes[4];
-+		sizes[0] = 45; //info file
++		sizes[0] = 60; //info file
 +		char *safe = "s=----";
 +
-+		printf("TMRing info files");
++		printf("TMRing info files\n");
 +		if(
 +			tmr_blob(
 +				part_offset[0] + file_offset[0],
@@ -73,7 +75,7 @@ index 2116a9e0a2..6a2a62e016 100644
 +			safe[2] = 'x';
 +		}
 +		
-+		printf("Reading info for filesizes");
++		printf("Reading info for filesizes\n");
 +		char tmp[15];
 +		char *info = (char *)map_sysmem(locations[0], 45);
 +		for (int i = 0; i < 3; i ++) {
@@ -83,7 +85,7 @@ index 2116a9e0a2..6a2a62e016 100644
 +		unmap_sysmem((const void*) info);
 +
 +		for (int i = 1; i < 4; i ++) {
-+			printf("TMRing file #%d of size %lu", i, sizes[i]);
++			printf("TMRing file #%d of size %lu\n", i, sizes[i]);
 +			if(
 +				!tmr_blob(
 +					part_offset[0] + file_offset[2*i],
@@ -99,10 +101,16 @@ index 2116a9e0a2..6a2a62e016 100644
 +			}
 +		}
 +
-+		setenv("bootargs", safe);
++		// TODO: See if we can find a way to make use of bootargs
++		//setenv("bootargs", safe);
 +
-+		char *argv[4] = {" ", "a5001000", "b0000000", "a9000000"};
-+		do_bootm(NULL, 0, 4, argv);
++		if(abortboot(5)) {
++			char *argv[4] = {"bootm", "a5001000", "b0000000", "a9000000"};
++			do_bootm(NULL, 0, 4, argv);
++		} else {
++			cli_loop();
++			panic("No CLI available");
++		}
 +
 +	} 
 +	else
@@ -145,10 +153,10 @@ index 2116a9e0a2..6a2a62e016 100644
  	cli_loop();
 diff --git a/common/tmr.c b/common/tmr.c
 new file mode 100644
-index 0000000000..aca3ffa3d2
+index 0000000000..a9e3629c0f
 --- /dev/null
 +++ b/common/tmr.c
-@@ -0,0 +1,202 @@
+@@ -0,0 +1,205 @@
 +#include <common.h>
 +#include <console.h>
 +#include <bootretry.h>
@@ -186,14 +194,18 @@ index 0000000000..aca3ffa3d2
 +)
 +{
 +	struct mmc *mmc;
-+	mmc->block_dev.blksz = 512;
-+	mmc->block_dev.devnum = 0;
-+	mmc->block_dev.if_type = IF_TYPE_MMC;
++	printf("Finding mmc device 0\n");
++	mmc = find_mmc_device(0);
++	mmc->has_init = 0;
++	printf("Initializing mmc device 0\n");
++	mmc_init(mmc);
 +
 +	u32 cnt = filesize / 512 + 1;
 +
 +	void *addr = (void *)locations[0];
++	printf("Reading from mmc\n");
 +	ulong n = blk_dread(mmc_get_blk_desc(mmc), file1, cnt, addr);
++	printf("Flushing cache\n");
 +	flush_cache((ulong)addr, cnt * 512);
 +	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
 +
@@ -347,7 +359,6 @@ index 0000000000..aca3ffa3d2
 +	printf("none of the hashes were correct. storing tmr result at 0xa0000000\n");
 +
 +	majority_wd(locations[0], locations[2], locations[4], locations[6], filesize);
-+	fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
 +	write_output(locations[6], output);
 +	return false;
 +}
