@@ -30,11 +30,24 @@ index 23bb81e88c..e653b80deb 100644
  
  /*
   * Store the resulting sum to an address or variable
+diff --git a/common/autoboot.c b/common/autoboot.c
+index c52bad84a4..1c61866935 100644
+--- a/common/autoboot.c
++++ b/common/autoboot.c
+@@ -255,7 +255,7 @@ static int __abortboot(int bootdelay)
+ }
+ # endif	/* CONFIG_AUTOBOOT_KEYED */
+ 
+-static int abortboot(int bootdelay)
++int abortboot(int bootdelay)
+ {
+ 	int abort = 0;
+ 
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..3143c4003c 100644
+index 2116a9e0a2..d1ede5da03 100644
 --- a/common/main.c
 +++ b/common/main.c
-@@ -11,7 +11,11 @@
+@@ -11,7 +11,10 @@
  #include <autoboot.h>
  #include <cli.h>
  #include <console.h>
@@ -42,18 +55,17 @@ index 2116a9e0a2..3143c4003c 100644
  #include <version.h>
 +#include <../common/tmr.c>
 +#include <command.h>
-+#include <autoboot.c>
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +67,104 @@ void main_loop(void)
+@@ -63,6 +66,108 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
 +	if(fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT))
 +	{
 +		// error: no file system --> Assume BLOB
-+		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 91003, 91004, 96004};
++		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 92003, 92004, 97004};
 +		ulong part_size = 1600000;
 +		ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
 +		ulong outputs[4] = {0xa5000000, 0xa5001000, 0xa9000000, 0xb0000000};
@@ -103,10 +115,14 @@ index 2116a9e0a2..3143c4003c 100644
 +
 +		// TODO: See if we can find a way to make use of bootargs
 +		//setenv("bootargs", safe);
++		char bootargs[CONFIG_SYS_CBSIZE];
++		cli_simple_process_macros("${cbootargs} root=/dev/mmcblk${devnum}p${distro_bootpart} rw rootwait ${bootargs}", bootargs);
++		setenv("bootargs", bootargs);
 +
-+		if(abortboot(5)) {
++		if(!abortboot(5)) {
 +			char *argv[4] = {"bootm", "a5001000", "b0000000", "a9000000"};
-+			do_bootm(NULL, 0, 4, argv);
++			cmd_tbl_t *bcmd = find_cmd("bootm");
++			do_bootm(bcmd, 0, 4, argv);
 +		} else {
 +			cli_loop();
 +			panic("No CLI available");
@@ -363,17 +379,43 @@ index 0000000000..a9e3629c0f
 +	return false;
 +}
 \ No newline at end of file
+diff --git a/include/autoboot.h b/include/autoboot.h
+index c175f91c5a..2fb8d08c81 100644
+--- a/include/autoboot.h
++++ b/include/autoboot.h
+@@ -24,6 +24,8 @@
+  */
+ const char *bootdelay_process(void);
+ 
++int abortboot(int bootdelay);
++
+ /**
+  * autoboot_command() - run the autoboot command
+  *
+@@ -39,6 +41,11 @@ static inline const char *bootdelay_process(void)
+ 	return NULL;
+ }
+ 
++static inline int abortboot(int bootdelay)
++{
++	return 0;
++}
++
+ static inline void autoboot_command(const char *s)
+ {
+ }
 diff --git a/include/configs/p2771-0000.h b/include/configs/p2771-0000.h
-index 1c8981b16f..ee863a557f 100644
+index 1c8981b16f..c558e685cb 100644
 --- a/include/configs/p2771-0000.h
 +++ b/include/configs/p2771-0000.h
-@@ -33,6 +33,10 @@
+@@ -33,6 +33,11 @@
  #define CONFIG_PCI_PNP
  #define CONFIG_CMD_PCI
  
 +/* Custom Commands */
 +#define CONFIG_CMD_TMR
 +#define CONFIG_CMD_MD5SUM
++#define DEBUG
 +
  #define BOARD_EXTRA_ENV_SETTINGS \
  	"calculated_vars=kernel_addr_r fdt_addr_r scriptaddr pxefile_addr_r " \
