@@ -17,7 +17,7 @@ rootdev=""
 opt="rw"
 wait=""
 start_boot_partition="1"
-tar_offset="96005"
+tar_offset="97005"
 
 function mount_and_checksum() {
 	echo "Mounting ${1} at /mnt/rootfs" > /dev/kmsg
@@ -83,10 +83,10 @@ boot_partition=${start_boot_partition}
 
 
 #do majority vote here
-skips=(0 2 90003 91004 96005) #blocks
-hash_skips=(1 90002 91003 96004 1596008) #blocks
+skips=(0 2 90003 92004 97005) #blocks
+hash_skips=(1 90002 92003 97004 1597008) #blocks
 sizes=(60) #bytes
-counts=(1 90000 1000 5000 1500000) #blocks
+counts=(1 90000 2000 5000 1500000) #blocks
 
 for i in {1..5}; do
 	good=(0 0 0)
