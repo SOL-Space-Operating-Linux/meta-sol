@@ -405,17 +405,16 @@ index c175f91c5a..2fb8d08c81 100644
  {
  }
 diff --git a/include/configs/p2771-0000.h b/include/configs/p2771-0000.h
-index 1c8981b16f..c558e685cb 100644
+index 1c8981b16f..ee863a557f 100644
 --- a/include/configs/p2771-0000.h
 +++ b/include/configs/p2771-0000.h
-@@ -33,6 +33,11 @@
+@@ -33,6 +33,10 @@
  #define CONFIG_PCI_PNP
  #define CONFIG_CMD_PCI
  
 +/* Custom Commands */
 +#define CONFIG_CMD_TMR
 +#define CONFIG_CMD_MD5SUM
-+#define DEBUG
 +
  #define BOARD_EXTRA_ENV_SETTINGS \
  	"calculated_vars=kernel_addr_r fdt_addr_r scriptaddr pxefile_addr_r " \
