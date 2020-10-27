@@ -29,16 +29,19 @@ oe_mkblobfs () {
 
     cp ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar ${IMAGE_ROOTFS_TMP}/live_rootfs.tar
 
+	# symbolic link for dtb
+	ln -s ${IMAGE_ROOTFS_TMP}/boot/tegra*.dtb ${IMAGE_ROOTFS_TMP}/boot/dtb
+
 	# Populate `info` file with sizes
 	touch ${IMAGE_ROOTFS_TMP}/info
-	for file in boot/Image boot/u-boot-dtb.bin boot/initrd live_rootfs.tar; do
+	for file in boot/Image boot/dtb boot/initrd live_rootfs.tar; do
 		size=$(wc -c ${IMAGE_ROOTFS_TMP}/${file} | awk '{print $1}')
 		printf "%015u" $size >> ${IMAGE_ROOTFS_TMP}/info
 	done
 
 	# Populate `hash/` directory with md5sums
 	mkdir ${IMAGE_ROOTFS_TMP}/hash
-	for file in info boot/u-boot-dtb.bin boot/initrd boot/Image live_rootfs.tar; do
+	for file in info boot/dtb boot/initrd boot/Image live_rootfs.tar; do
 		md5sum ${IMAGE_ROOTFS_TMP}/$file > ${IMAGE_ROOTFS_TMP}/hash/$(basename $file)
 	done
 
@@ -48,8 +51,8 @@ oe_mkblobfs () {
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/info seek=1 count=1 obs=512
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/Image seek=2 count=90000 obs=512
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/Image seek=90002 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/u-boot-dtb.bin seek=90003 count=2000 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/u-boot-dtb.bin seek=92003 count=1 obs=512
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/dtb seek=90003 count=2000 obs=512
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/dtb seek=92003 count=1 obs=512
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/initrd seek=92004 count=5000 obs=512
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/initrd seek=97004 count=1 obs=512
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/live_rootfs.tar seek=97005 count=1500000 obs=512
