@@ -44,7 +44,7 @@ index c52bad84a4..1c61866935 100644
  	int abort = 0;
  
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..d1ede5da03 100644
+index 2116a9e0a2..2cb6416e78 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -11,7 +11,10 @@
@@ -58,7 +58,7 @@ index 2116a9e0a2..d1ede5da03 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +66,108 @@ void main_loop(void)
+@@ -63,6 +66,122 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
@@ -116,13 +116,27 @@ index 2116a9e0a2..d1ede5da03 100644
 +		// TODO: See if we can find a way to make use of bootargs
 +		//setenv("bootargs", safe);
 +		char bootargs[CONFIG_SYS_CBSIZE];
-+		cli_simple_process_macros("${cbootargs} root=/dev/mmcblk${devnum}p${distro_bootpart} rw rootwait ${bootargs}", bootargs);
++		cli_simple_process_macros("${cbootargs} root=/dev/mmcblk0p1 rw rootwait ${bootargs}", bootargs);
 +		setenv("bootargs", bootargs);
 +
 +		if(!abortboot(5)) {
-+			char *argv[4] = {"bootm", "a5001000", "b0000000", "a9000000"};
-+			cmd_tbl_t *bcmd = find_cmd("bootm");
-+			do_bootm(bcmd, 0, 4, argv);
++			char initrd_loc[20] = "b0000000:";
++			char initrd_size[15];
++			char *p = &initrd_size[14];
++			// create string from filesize of initrd
++			ulong i = sizes[2];
++			ulong tmp;
++			do {
++				tmp = i % 16;
++				if (tmp > 9)
++					tmp += 7; // if greater than '9', go to 'A'
++				*p-- = '0' + tmp;
++				i /= 16;
++			} while (i > 0);
++			// p+1 now points to the beginning of size string
++			char *argv[4] = {"booti", "a5001000", strcat(initrd_loc,p+1), "a9000000"};
++			cmd_tbl_t *bcmd = find_cmd("booti");
++			do_booti(bcmd, 0, 4, argv);
 +		} else {
 +			cli_loop();
 +			panic("No CLI available");
