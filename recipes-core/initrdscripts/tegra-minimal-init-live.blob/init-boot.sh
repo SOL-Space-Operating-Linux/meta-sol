@@ -11,7 +11,9 @@ mount -t sysfs sysfs /sys
 #create ramdisk
 echo "Creating ram disk" > /dev/kmsg
 mkdir -p /mnt/ramdisk
+echo "Made directory" > /dev/kmsg
 mount -t tmpfs -o size=${ROOTFSPART_SIZE} tmpfs /mnt/ramdisk
+echo "Mounted" > /dev/kmsg
 
 rootdev=""
 opt="rw"
@@ -53,10 +55,12 @@ function extract_and_boot() {
 	fi
 }
 
-
+echo "weird statement before" > /dev/kmsg
 [ ! -f /etc/platform-preboot ] || . /etc/platform-preboot
+echo "weird statement after" > /dev/kmsg
 
 if [ -z "$rootdev" ]; then
+    echo "no rootdev var" > /dev/kmsg
     for bootarg in `cat /proc/cmdline`; do
 	case "$bootarg" in
 	    root=*) rootdev="${bootarg##root=}" ;;
@@ -81,7 +85,7 @@ fi
 num_paritions="3"
 boot_partition=${start_boot_partition}
 
-
+echo "about to start tmr" > /dev/kmsg
 #do majority vote here
 skips=(0 2 90003 92004 97005) #blocks
 hash_skips=(1 90002 92003 97004 1597008) #blocks
