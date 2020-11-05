@@ -87,55 +87,85 @@ boot_partition=${start_boot_partition}
 
 echo "about to start tmr" > /dev/kmsg
 #do majority vote here
-skips=(0 2 90003 92004 97005) #blocks
-hash_skips=(1 90002 92003 97004 1597008) #blocks
-sizes=(60) #bytes
-counts=(1 90000 2000 5000 1500000) #blocks
+skips1=0
+skips2=2
+skips3=90003
+skips4=92004
+skips5=97005
 
-for i in {1..5}; do
-	good=(0 0 0)
+hash_skips1=1
+hash_skips2=90002
+hash_skips3=92003
+hash_skips4=97004
+hash_skips5=1597008
 
-	for j in {1..3}; do
-		calculated=$(dd if="/dev/mmcblk0p${j}" skip=$skips[$i] count=$counts[$i] 2>/dev/null | head -c $sizes[$i] | md5sum | head -c 32)
-		existing=$(dd if="/dev/mmcblk0p${j}" skip=$hash_skips[$i] count=1 2>/dev/null | head -c 32)
+sizes1=60 # don't know rest yet
+
+counts1=1
+counts2=90000
+counts3=2000
+counts4=5000
+counts5=1500000
+
+for i in 1 2 3 4 5; do
+	good1=0
+    good2=0
+    good3=0
+
+    echo "Checking file $i" > /dev/kmsg
+
+	for j in 1 2 3; do
+		eval calculated=$(dd if="/dev/mmcblk0p${j}" skip=\$skips$i count=\$counts$i 2>/dev/null | head -c \$sizes$i | md5sum | head -c 32)
+		eval existing=$(dd if="/dev/mmcblk0p${j}" skip=\$hash_skips$i count=1 2>/dev/null | head -c 32)
 		if [ $calculated = $existing ]; then
-			$good[$j]=1
-		fi
+			eval good$j=1
+            echo "file $i version $j matches hash" > /dev/kmsg
+		else
+            echo "file $i version $j does not match hash" > /dev/kmsg
+        fi
 	done
 
-	if [ "$good" = "0 0 0" ]; then
-		boot-tmr $sizes[$i] $skips[$i] /dev/mmcblk0p1 /dev/mmcblk0p2 /dev/mmcblk0p3
-	elif [ "$good" != "1 1 1" ]; then
+	if [ "$good1 $good2 $good3" = "0 0 0" ]; then
+        echo "doing boot-tmr" > /dev/kmsg
+		eval boot-tmr \$sizes$i \$skips$i /dev/mmcblk0p1 /dev/mmcblk0p2 /dev/mmcblk0p3
+	elif [ "$good1 $good2 $good3" != "1 1 1" ]; then
 		# find good copy
-		if [ $good[1] = 1 ]; then
+        echo "finding good copy" > /dev/kmsg
+		if [ $good1 = 1 ]; then
 			g=1
-		elif [ $good[2] = 1 ]; then
+		elif [ $good2 = 1 ]; then
 			g=2
 		else
 			g=3
 		fi
 
+        echo "good image is $g; replacing bad ones" > /dev/kmsg
 		# replace bad copy/copies
-		for c in {1..3}; do
-			if [ $good[$c] = 0 ]; then
-				dd if="/dev/mmcblk0p${g}" of="/dev/mmcblk0p${c}" skip=$skips[$i] seek=$skips[$i] count=$counts[$i]
+		for c in 1 2 3; do
+			if [ $(eval echo \$good$c) = 0 ]; then
+				eval dd if="/dev/mmcblk0p${g}" of="/dev/mmcblk0p${c}" skip=\$skips$i seek=\$skips$i count=\$counts$i
 			fi
 		done
 	fi
 
+    echo "replacing hashes and storing in flash" > /dev/kmsg
 	# replace hashes
-	echo $(dd if="/dev/mmcblk0p1" skip=$skips[$i] count=$counts[$i] 2>/dev/null | head -c $sizes[$i] | md5sum | head -c 32) > md5.txt
-	for j in {1..3}; do
-		echo $(dd if=md5.txt of="/dev/mmcblk0p{$j}" seek=$hash_skips[$i] count=1 2>/dev/null | head -c 32)
+	echo $(eval dd if="/dev/mmcblk0p1" skip=\$skips$i count=\$counts$i 2>/dev/null | head -c \$sizes$i | md5sum | head -c 32) > md5.txt
+	for j in 1 2 3; do
+		echo $(eval dd if=md5.txt of="/dev/mmcblk0p{$j}" seek=\$hash_skips$i count=1 2>/dev/null | head -c 32)
 	done
 
 
 	if [ $i = 1 ]; then
 		# fill in sizes after info is done
-		sizes+=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 15 | tail -c 15)
-		sizes+=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 30 | tail -c 15)
-		sizes+=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 45 | tail -c 15)
-		sizes+=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 60 | tail -c 15)
+		sizes2=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 15 | tail -c 15)
+        echo "sizes2 is $sizes2" > /dev/kmsg
+		sizes3=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 30 | tail -c 15)
+        echo "sizes3 is $sizes3" > /dev/kmsg
+		sizes4=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 45 | tail -c 15)
+        echo "sizes4 is $sizes4" > /dev/kmsg
+		sizes5=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 60 | tail -c 15)
+        echo "sizes5 is $sizes5" > /dev/kmsg
 	fi
 done
 
