@@ -44,7 +44,7 @@ index c52bad84a4..1c61866935 100644
  	int abort = 0;
  
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..2cb6416e78 100644
+index 2116a9e0a2..5253b30076 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -11,7 +11,10 @@
@@ -116,7 +116,7 @@ index 2116a9e0a2..2cb6416e78 100644
 +		// TODO: See if we can find a way to make use of bootargs
 +		//setenv("bootargs", safe);
 +		char bootargs[CONFIG_SYS_CBSIZE];
-+		cli_simple_process_macros("${cbootargs} root=/dev/mmcblk0p1 rw rootwait ${bootargs}", bootargs);
++		cli_simple_process_macros("${cbootargs} root=/dev/ram0 rw rootwait ${bootargs}", bootargs);
 +		setenv("bootargs", bootargs);
 +
 +		if(!abortboot(5)) {
