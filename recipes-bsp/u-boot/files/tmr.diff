@@ -44,7 +44,7 @@ index c52bad84a4..1c61866935 100644
  	int abort = 0;
  
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..5253b30076 100644
+index 2116a9e0a2..87ad5c9357 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -11,7 +11,10 @@
@@ -58,7 +58,7 @@ index 2116a9e0a2..5253b30076 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +66,122 @@ void main_loop(void)
+@@ -63,6 +66,123 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
@@ -122,9 +122,10 @@ index 2116a9e0a2..5253b30076 100644
 +		if(!abortboot(5)) {
 +			char initrd_loc[20] = "b0000000:";
 +			char initrd_size[15];
-+			char *p = &initrd_size[14];
++			initrd_size[14]=0; // null terminate
++			char *p = &initrd_size[13];
 +			// create string from filesize of initrd
-+			ulong i = sizes[2];
++			ulong i = sizes[3];
 +			ulong tmp;
 +			do {
 +				tmp = i % 16;
