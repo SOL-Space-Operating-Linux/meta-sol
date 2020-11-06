@@ -19,13 +19,12 @@ rootdev=""
 opt="rw"
 wait=""
 start_boot_partition="1"
-tar_offset="97005"
 
 function mount_and_checksum() {
 	echo "Mounting ${1} at /mnt/rootfs" > /dev/kmsg
 	mkdir -p /mnt/rootfs
 	head -c 60 $1 | tail -c 15
-	dd if=$1 of=/mnt/rootfs/live_rootfs.tar bs=512 skip=$tar_offset 
+	dd if=$1 bs=512 skip=$skips5 count=$counts5 2>/dev/null | head -c $sizes5 > /mnt/rootfs/live_rootfs.tar
 	mount_rc=$?
 	if [ ${mount_rc} -eq 0 ]; then
 		cd /
@@ -55,12 +54,9 @@ function extract_and_boot() {
 	fi
 }
 
-echo "weird statement before" > /dev/kmsg
 [ ! -f /etc/platform-preboot ] || . /etc/platform-preboot
-echo "weird statement after" > /dev/kmsg
 
 if [ -z "$rootdev" ]; then
-    echo "no rootdev var" > /dev/kmsg
     for bootarg in `cat /proc/cmdline`; do
 	case "$bootarg" in
 	    root=*) rootdev="${bootarg##root=}" ;;
@@ -85,7 +81,6 @@ fi
 num_paritions="3"
 boot_partition=${start_boot_partition}
 
-echo "about to start tmr" > /dev/kmsg
 #do majority vote here
 skips1=0
 skips2=2
@@ -115,8 +110,8 @@ for i in 1 2 3 4 5; do
     echo "Checking file $i" > /dev/kmsg
 
 	for j in 1 2 3; do
-		eval calculated=$(dd if="/dev/mmcblk0p${j}" skip=\$skips$i count=\$counts$i 2>/dev/null | head -c \$sizes$i | md5sum | head -c 32)
-		eval existing=$(dd if="/dev/mmcblk0p${j}" skip=\$hash_skips$i count=1 2>/dev/null | head -c 32)
+		calculated=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$skips$i count=\$counts$i 2>/dev/null | head -c \$sizes$i | md5sum | head -c 32)
+		existing=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$hash_skips$i count=1 2>/dev/null | head -c 32)
 		if [ $calculated = $existing ]; then
 			eval good$j=1
             echo "file $i version $j matches hash" > /dev/kmsg
@@ -143,7 +138,7 @@ for i in 1 2 3 4 5; do
 		# replace bad copy/copies
 		for c in 1 2 3; do
 			if [ $(eval echo \$good$c) = 0 ]; then
-				eval dd if="/dev/mmcblk0p${g}" of="/dev/mmcblk0p${c}" skip=\$skips$i seek=\$skips$i count=\$counts$i
+				eval dd if="/dev/mmcblk0p\${g}" of="/dev/mmcblk0p\${c}" skip=\$skips$i seek=\$skips$i count=\$counts$i
 			fi
 		done
 	fi
@@ -152,20 +147,22 @@ for i in 1 2 3 4 5; do
 	# replace hashes
 	echo $(eval dd if="/dev/mmcblk0p1" skip=\$skips$i count=\$counts$i 2>/dev/null | head -c \$sizes$i | md5sum | head -c 32) > md5.txt
 	for j in 1 2 3; do
-		echo $(eval dd if=md5.txt of="/dev/mmcblk0p{$j}" seek=\$hash_skips$i count=1 2>/dev/null | head -c 32)
+		echo $(eval dd if=md5.txt of="/dev/mmcblk0p\$j" seek=\$hash_skips$i count=1 2>/dev/null | head -c 32)
 	done
 
 
 	if [ $i = 1 ]; then
 		# fill in sizes after info is done
-		sizes2=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 15 | tail -c 15)
+		sizes2=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 2>/dev/null | head -c 15 | tail -c 15)
         echo "sizes2 is $sizes2" > /dev/kmsg
-		sizes3=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 30 | tail -c 15)
+		sizes3=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 2>/dev/null | head -c 30 | tail -c 15)
         echo "sizes3 is $sizes3" > /dev/kmsg
-		sizes4=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 45 | tail -c 15)
+		sizes4=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 2>/dev/null | head -c 45 | tail -c 15)
         echo "sizes4 is $sizes4" > /dev/kmsg
-		sizes5=$(dd if="/dev/mmcblk0p1" skip=0 count=1 2>/dev/null | head -c 60 | tail -c 15)
+		sizes5=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 2>/dev/null | head -c 60 | tail -c 15)
         echo "sizes5 is $sizes5" > /dev/kmsg
+		echo $(dd if=/dev/mmcblk0p1 skip=0 count=1) > /dev/kmsg
+		echo $(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512) > /dev/kmsg
 	fi
 done
 
