@@ -23,18 +23,15 @@ start_boot_partition="1"
 function mount_and_checksum() {
 	echo "Mounting ${1} at /mnt/rootfs" > /dev/kmsg
 	mkdir -p /mnt/rootfs
-	head -c 60 $1 | tail -c 15
 	dd if=$1 bs=512 skip=$skips5 count=$counts5 | head -c $sizes5 > /mnt/rootfs/live_rootfs.tar
 	mount_rc=$?
 	if [ ${mount_rc} -eq 0 ]; then
 		cd /
 		extract_and_boot /mnt/rootfs/live_rootfs.tar
 		umount /mnt/ramdisk
-		umount /mnt/rootfs
 		mount -t tmpfs -o size=${ROOTFSPART_SIZE} tmpfs /mnt/ramdisk
 	else
 		echo "Unable to mount ${1} with code (${mount_rc}), switching sides" > /dev/kmsg
-		umount /mnt/rootfs
 	fi
 }
 
@@ -49,7 +46,6 @@ function extract_and_boot() {
 		mount --move /sys  /mnt/ramdisk/sys
 		mount --move /proc /mnt/ramdisk/proc
 		mount --move /dev  /mnt/ramdisk/dev
-		umount /mnt/rootfs
 		exec switch_root /mnt/ramdisk /sbin/init
 	fi
 }
@@ -92,7 +88,7 @@ hash_skips1=1
 hash_skips2=90002
 hash_skips3=92003
 hash_skips4=97004
-hash_skips5=1597008
+hash_skips5=1597005
 
 sizes1=60 # don't know rest yet
 
@@ -110,7 +106,7 @@ for i in 1 2 3 4 5; do
     echo "Checking file $i" > /dev/kmsg
 
 	for j in 1 2 3; do
-		calculated=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$skips$i count=\$counts$i | head -c \$sizes$i | md5sum | head -c 32)
+		calculated=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$skips$i count=\$counts$i | eval head -c \$sizes$i | md5sum | head -c 32)
 		existing=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$hash_skips$i count=1 | head -c 32)
 		if [ $calculated = $existing ]; then
 			eval good$j=1
@@ -145,7 +141,7 @@ for i in 1 2 3 4 5; do
 
     echo "replacing hashes and storing in flash" > /dev/kmsg
 	# replace hashes
-	echo $(eval dd if="/dev/mmcblk0p1" skip=\$skips$i count=\$counts$i | head -c \$sizes$i | md5sum | head -c 32) > md5.txt
+	echo $(eval dd if="/dev/mmcblk0p1" skip=\$skips$i count=\$counts$i | eval head -c \$sizes$i | md5sum | head -c 32) > md5.txt
 	for j in 1 2 3; do
 		echo $(eval dd if=md5.txt of="/dev/mmcblk0p\$j" seek=\$hash_skips$i count=1 | head -c 32)
 	done
@@ -154,13 +150,13 @@ for i in 1 2 3 4 5; do
 	if [ $i = 1 ]; then
 		# fill in sizes after info is done
 		sizes2=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 | head -c 15 | tail -c 15)
-        echo "sizes2 is $sizes2" > /dev/kmsg
+		echo "sizes2 is $sizes2" > /dev/kmsg
 		sizes3=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 | head -c 30 | tail -c 15)
-        echo "sizes3 is $sizes3" > /dev/kmsg
+		echo "sizes3 is $sizes3" > /dev/kmsg
 		sizes4=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 | head -c 45 | tail -c 15)
-        echo "sizes4 is $sizes4" > /dev/kmsg
+		echo "sizes4 is $sizes4" > /dev/kmsg
 		sizes5=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 | head -c 60 | tail -c 15)
-        echo "sizes5 is $sizes5" > /dev/kmsg
+		echo "sizes5 is $sizes5" > /dev/kmsg
 		echo $(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512) > /dev/kmsg
 	fi
 done
