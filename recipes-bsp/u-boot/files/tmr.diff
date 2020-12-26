@@ -44,7 +44,7 @@ index c52bad84a4..1c61866935 100644
  	int abort = 0;
  
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..87ad5c9357 100644
+index 2116a9e0a2..0e5001074c 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -11,7 +11,10 @@
@@ -66,7 +66,7 @@ index 2116a9e0a2..87ad5c9357 100644
 +	{
 +		// error: no file system --> Assume BLOB
 +		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 92003, 92004, 97004};
-+		ulong part_size = 1600000;
++		ulong part_size = 4800000;
 +		ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
 +		ulong outputs[4] = {0xa5000000, 0xa5001000, 0xa9000000, 0xb0000000};
 +		ulong sizes[4];

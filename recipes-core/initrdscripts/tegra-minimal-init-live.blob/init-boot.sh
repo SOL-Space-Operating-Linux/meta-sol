@@ -88,7 +88,7 @@ hash_skips1=1
 hash_skips2=90002
 hash_skips3=92003
 hash_skips4=97004
-hash_skips5=1597005
+hash_skips5=4597005
 
 sizes1=60 # don't know rest yet
 
@@ -96,7 +96,7 @@ counts1=1
 counts2=90000
 counts3=2000
 counts4=5000
-counts5=1500000
+counts5=4500000
 
 for i in 1 2 3 4 5; do
 	good1=0
