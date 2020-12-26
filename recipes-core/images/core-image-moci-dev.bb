@@ -3,6 +3,8 @@ SUMMARY = "MOCI core development image"
 LICENSE = "MIT"
 LICENSE_FLAGS_WHITELIST = "commercial"
 
+IMAGE_CLASSES += "image_types_tegralive_blob"
+
 inherit core-image image_types_tegra
 require core-image-moci.bb
 require core-image-sol-dev.bb
