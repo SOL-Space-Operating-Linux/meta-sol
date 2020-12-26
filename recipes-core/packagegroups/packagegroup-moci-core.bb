@@ -7,5 +7,4 @@ RDEPENDS_${PN} = " \
     libpng \
     tiff \
     python3 \
-    tegra-sfm \
 "
