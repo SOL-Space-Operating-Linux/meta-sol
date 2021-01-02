@@ -30,11 +30,16 @@ RDEPENDS_${PN} = " \
 export NVCC
 NVCC = "/usr/local/cuda-10.0/bin/nvcc -ccbin /usr/bin/aarch64-linux-gnu-g++"
 CXX = "/usr/bin/aarch64-linux-gnu-gcc"
-EXTRA_OEMAKE = "'NVCC=${NVCC}' 'LINK=${NVCC}' 'CXX=${CXX}'"
+INCLUDES = "-I. -I./include -I/usr/local/cuda/include -I/usr/local/libpng/include/libpng15"
+
+EXTRA_OEMAKE = "'NVCC=${NVCC}' 'LINK=${NVCC}' 'CXX=${CXX}' 'INCLUDES=${INCLUDES}'" 
 PARALLEL_MAKE = "-j8"
 
 do_compile() {
 	export CPATH=/usr/local/cuda-10.0/targets/aarch64-linux/include:$CPATH
+	export LD_LIBRARY_PATH=/usr/lib:$LD_LIBRARY_PATH
+	export PKG_CONFIG_PATH=/usr/lib/pkgconfig:$PKG_CONFIG_PATH
+
         oe_runmake -C ${S} sfm SM=62
 }
 
