@@ -9,30 +9,40 @@ COMPATIBLE_MACHINE = "(tegra)"
 
 INHIBIT_PACKAGE_STRIP = "1"
 
-S = "${WORKDIR}/Tegra-SFM"
+S = "${WORKDIR}/SSRLCV"
+
+TARGET_CC_ARCH += "${LDFLAGS}"
+INSANE_SKIP_${PN} += "dev-deps"
+INSANE_SKIP_${PN} += "already-stripped"
+INSANE_SKIP_${PN} += "ldflags"
 
 do_unpack() {
-    tar -C ${WORKDIR} -x -f ${THISDIR}/tegra-sfm/tegra-sfm.tar.gz
+    tar -C ${S} -x -f ${THISDIR}/tegra-sfm/tegra-sfm.tar.gz
 }
 
+RDEPENDS_${PN} = " \
+    cuda-cusolver \
+    cuda-cublas \
+    cuda-cudart \
+    tegra-libraries \
+"
+
 export NVCC
-NVCC = "/usr/local/cuda-10.2/bin/nvcc"
-EXTRA_OEMAKE = "'NVCC=${NVCC}' 'LINK=${NVCC}'"
+NVCC = "/usr/local/cuda-10.0/bin/nvcc -ccbin /usr/bin/aarch64-linux-gnu-g++"
+CXX = "/usr/bin/aarch64-linux-gnu-gcc"
+EXTRA_OEMAKE = "'NVCC=${NVCC}' 'LINK=${NVCC}' 'CXX=${CXX}'"
 PARALLEL_MAKE = "-j8"
 
 do_compile() {
-    if [[ $MACHINE = "jetson-tx2" ] || [ $MACHINE = "jetson-tx2i" ]]
-    then
-        oe_runmake sfm SM=52
-    elif [[ $MACHINE = "jetson-tx2" ]]
-    then
-        oe_runmake sfm SM=53
-    else
-        bbfatal "Machine is not compatible with Tegra-SFM"
-    fi
+	export CPATH=/usr/local/cuda-10.0/targets/aarch64-linux/include:$CPATH
+        oe_runmake -C ${S} sfm SM=62
 }
 
 do_install() {
+    install -d ${D}${libdir}
+    install -m 0644 ${THISDIR}/files/libpng15.so.15 ${D}${libdir}/libpng15.so.15
+    install -m 0644 ${THISDIR}/files/libjpeg.so.8 ${D}${libdir}/libjpeg.so.8
+
     install -d ${D}${bindir}
     install -m 0755 ${S}/bin/SFM ${D}${bindir}
 }

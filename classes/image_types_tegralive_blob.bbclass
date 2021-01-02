@@ -19,10 +19,6 @@ IMAGE_ROOTFS_ALIGNMENT ?= "1"
 
 oe_mkblobfs () {
 
-	# Easy (but kinda bad) way to copy SSRLCV in
-	mkdir -p ${IMAGE_ROOTFS}/home/root/
-	cp -r /home/ssrl/SSRLCV ${IMAGE_ROOTFS}/home/root/
-	
 	# Compress Image (Remove J flag for no compression)
     bbdebug 1 "tar -cJf ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar --numeric-owner -C ${IMAGE_ROOTFS} . || [ $? -eq 1 ]"
     tar -cJf ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar --numeric-owner -C ${IMAGE_ROOTFS} . || [ $? -eq 1 ]

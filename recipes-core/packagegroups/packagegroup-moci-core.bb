@@ -4,7 +4,9 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 inherit packagegroup
 
 RDEPENDS_${PN} = " \
-    libpng \
-    tiff \
     python3 \
+    tegra-sfm \
+    cuda-cusolver \
+    cuda-cublas \
+    cuda-cudart \
 "
