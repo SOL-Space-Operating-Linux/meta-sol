@@ -7,7 +7,5 @@ RDEPENDS_${PN} = " \
     python3 \
     tegra-sfm \
     moyoloci \
-    cuda-cusolver \
-    cuda-cublas \
-    cuda-cudart \
+    cuda-toolkit \
 "
