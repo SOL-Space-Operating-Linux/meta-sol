@@ -47,6 +47,7 @@ do_install() {
     install -d ${D}${libdir}
     install -m 0644 ${THISDIR}/files/libpng15.so.15 ${D}${libdir}/libpng15.so.15
     install -m 0644 ${THISDIR}/files/libjpeg.so.8 ${D}${libdir}/libjpeg.so.8
+    install -m 0644 ${THISDIR}/files/libz.so ${D}{libdir}/libz.so
 
     install -d ${D}${bindir}
     install -m 0755 ${S}/bin/SFM ${D}${bindir}
