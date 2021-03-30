@@ -10,6 +10,7 @@ PACKAGE_INSTALL = "\
     tegra-firmware-xusb \
     tegra-minimal-init-live.blob \
     xz tar boot-tmr \
+    e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs e2fsprogs-badblocks \
     ${TEGRA_INITRD_BASEUTILS} \
     ${ROOTFS_BOOTSTRAP_INSTALL} \
     ${TEGRA_INITRD_INSTALL} \
