@@ -12,6 +12,7 @@ RDEPENDS_${PN} = " \
     python3-crcmod \
     python3-pillow \
     python3-terminaltables \
+    ffmpeg \
     tegra-sfm \
     moyoloci \
     cuda-toolkit \
