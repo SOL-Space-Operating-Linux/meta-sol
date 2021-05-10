@@ -45,6 +45,19 @@ oe_mkblobfs () {
 		md5sum ${IMAGE_ROOTFS_TMP}/$file > ${IMAGE_ROOTFS_TMP}/hash/$(basename $file)
 	done
 
+        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/Image) -ge 46080000 ]; then
+                bbfatal Image file needs more space allocated
+        fi
+        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/dtb) -ge 1024000 ]; then
+                bbfatal dtb file needs more space allocated
+        fi
+        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/initrd) -ge 3072000 ]; then
+                bbfatal initrd file needs more space allocated
+        fi
+        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/live_rootfs.tar) -ge 4044800000 ]; then
+                bbfatal rootfs.tar file needs more space allocated
+        fi
+
 	# Create the blob
 	bbdebug 1 "Executing dd commands to build blob"
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/info seek=0 count=1 obs=512
@@ -53,11 +66,11 @@ oe_mkblobfs () {
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/Image seek=90002 count=1 obs=512
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/dtb seek=90003 count=2000 obs=512
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/dtb seek=92003 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/initrd seek=92004 count=5000 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/initrd seek=97004 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/live_rootfs.tar seek=97005 count=7900000 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/live_rootfs.tar seek=7997005 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=/dev/zero seek=7997008 obs=512 count=0
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/initrd seek=92004 count=6000 obs=512
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/initrd seek=98004 count=1 obs=512
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/live_rootfs.tar seek=98005 count=7900000 obs=512
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/live_rootfs.tar seek=7998005 count=1 obs=512
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=/dev/zero seek=7998008 obs=512 count=0
 }
 
 IMAGE_CMD_blob = "oe_mkblobfs"

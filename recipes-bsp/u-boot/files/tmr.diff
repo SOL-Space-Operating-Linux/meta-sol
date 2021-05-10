@@ -65,7 +65,7 @@ index 2116a9e0a2..0e5001074c 100644
 +	if(fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT))
 +	{
 +		// error: no file system --> Assume BLOB
-+		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 92003, 92004, 97004};
++		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 92003, 92004, 98004};
 +		ulong part_size = 8000000;
 +		ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
 +		ulong outputs[4] = {0xa5000000, 0xa5001000, 0xa9000000, 0xb0000000};

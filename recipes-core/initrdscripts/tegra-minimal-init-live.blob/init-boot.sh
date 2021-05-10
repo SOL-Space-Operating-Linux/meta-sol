@@ -84,20 +84,20 @@ skips1=0
 skips2=2
 skips3=90003
 skips4=92004
-skips5=97005
+skips5=98005
 
 hash_skips1=1
 hash_skips2=90002
 hash_skips3=92003
-hash_skips4=97004
-hash_skips5=7997005
+hash_skips4=98004
+hash_skips5=7998005
 
 sizes1=60 # don't know rest yet
 
 counts1=1
 counts2=90000
 counts3=2000
-counts4=5000
+counts4=6000
 counts5=7900000
 
 for i in 1 2 3 4 5; do
