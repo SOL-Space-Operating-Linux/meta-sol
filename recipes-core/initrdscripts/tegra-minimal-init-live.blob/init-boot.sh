@@ -46,8 +46,6 @@ function extract_and_boot() {
 		mount --move /sys  /mnt/ramdisk/sys
 		mount --move /proc /mnt/ramdisk/proc
 		mount --move /dev  /mnt/ramdisk/dev
-		mount --move /config /mnt/ramdisk/config
-		mount --move /data /mnt/ramdisk/data
 		exec switch_root /mnt/ramdisk /sbin/init
 	fi
 }
@@ -167,28 +165,28 @@ done
 fsck -t ext4 /dev/mmcblk0p4
 retval=$?
 if [ $retval = 0 ]; then
-	echo "ext4 file system exists and is fine for config partition"
+	echo "ext4 file system exists and is fine for config partition" > /dev/kmsg
 elif [ $retval = 1 ]; then
-	echo "Errors successfully corrected on config partition"
+	echo "Errors successfully corrected on config partition" > /dev/kmsg
 else
-	echo "Config filesystem does not exist or is too corrupt, making fs"
-	mke2fs -t ext4 /dev/mmcblk0p4
+	echo "Config filesystem does not exist or is too corrupt, making fs" > /dev/kmsg
+	mke2fs -t ext4 /dev/mmcblk0p4 > /dev/kmsg
 fi
-mkdir /config
-mount -t ext4 /dev/mmcblk0p4 /config
+mkdir /mnt/ramdisk/config
+mount -t ext4 /dev/mmcblk0p4 /mnt/ramdisk/config
 
 fsck -t ext4 /dev/mmcblk0p5
 retval=$?
 if [ $retval = 0 ]; then
-	echo "ext4 file system exists and is fine for data partition"
+	echo "ext4 file system exists and is fine for data partition" > /dev/kmsg
 elif [ $retval = 1 ]; then
-	echo "Errors successfully corrected on data partition"
+	echo "Errors successfully corrected on data partition" > /dev/kmsg
 else
-	echo "Data filesystem does not exist or is too corrupt, making fs"
-	mke2fs -t ext4 /dev/mmcblk0p5
+	echo "Data filesystem does not exist or is too corrupt, making fs" > /dev/kmsg
+	mke2fs -t ext4 /dev/mmcblk0p5 > /dev/kmsg
 fi
-mkdir /data
-mount -t ext4 /dev/mmcblk0p5 /data
+mkdir /mnt/ramdisk/data
+mount -t ext4 /dev/mmcblk0p5 /mnt/ramdisk/data
 
 while true; do
 	boot_device="/dev/mmcblk0p${boot_partition}"
