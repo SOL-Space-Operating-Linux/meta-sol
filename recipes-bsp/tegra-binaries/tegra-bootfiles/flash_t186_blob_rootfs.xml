@@ -219,7 +219,7 @@
         <partition name="APP" type="data">
             <allocation_policy> sequential </allocation_policy>
             <filesystem_type> basic </filesystem_type>
-            <size> 4096000000 </size> <!-- 8000000  blocks -->
+            <size> APPSIZE </size> <!-- 8000000  blocks -->
             <file_system_attribute> 0 </file_system_attribute>
             <allocation_attribute> 0x8 </allocation_attribute>
             <percent_reserved> 0 </percent_reserved>
@@ -233,7 +233,7 @@
         <partition name="APP_b" type="data">
             <allocation_policy> sequential </allocation_policy>
             <filesystem_type> basic </filesystem_type>
-            <size> 4096000000 </size>
+            <size> APPSIZE </size>
             <file_system_attribute> 0 </file_system_attribute>
             <allocation_attribute> 0x8 </allocation_attribute>
             <percent_reserved> 0 </percent_reserved>
@@ -246,7 +246,7 @@
         <partition name="APP_c" type="data">
             <allocation_policy> sequential </allocation_policy>
             <filesystem_type> basic </filesystem_type>
-            <size> 4096000000 </size>
+            <size> APPSIZE </size>
             <file_system_attribute> 0 </file_system_attribute>
             <allocation_attribute> 0x8 </allocation_attribute>
             <percent_reserved> 0 </percent_reserved>

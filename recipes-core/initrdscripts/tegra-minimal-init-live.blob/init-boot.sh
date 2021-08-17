@@ -23,7 +23,7 @@ start_boot_partition="1"
 function mount_and_checksum() {
 	echo "Mounting ${1} at /mnt/rootfs" > /dev/kmsg
 	mkdir -p /mnt/rootfs
-	dd if=$1 bs=512 skip=$skips5 count=$counts5 | head -c $sizes5 > /mnt/rootfs/live_rootfs.tar
+	dd if=$1 bs=BLOCK_SIZE skip=$skips5 count=$counts5 | head -c $sizes5 > /mnt/rootfs/live_rootfs.tar
 	mount_rc=$?
 	if [ ${mount_rc} -eq 0 ]; then
 		cd /
@@ -78,25 +78,25 @@ num_paritions="3"
 boot_partition=${start_boot_partition}
 
 #do majority vote here
-skips1=0
-skips2=2
-skips3=90003
-skips4=92004
-skips5=98005
+skips1=INFO_FILE_OFFSET
+skips2=IMAGE_FILE_OFFSET
+skips3=DTB_FILE_OFFSET
+skips4=INITRD_FILE_OFFSET
+skips5=ROOTFS_FILE_OFFSET
 
-hash_skips1=1
-hash_skips2=90002
-hash_skips3=92003
-hash_skips4=98004
-hash_skips5=7998005
+hash_skips1=INFO_HASH_OFFSET
+hash_skips2=IMAGE_HASH_OFFSET
+hash_skips3=DTB_HASH_OFFSET
+hash_skips4=INITRD_HASH_OFFSET
+hash_skips5=ROOTFS_HASH_OFFSET
 
-sizes1=60 # don't know rest yet
+sizes1=$(echo INFO_BYTES \* 4 | bc) # don't know rest yet
 
-counts1=1
-counts2=90000
-counts3=2000
-counts4=6000
-counts5=7900000
+counts1=INFO_FILE_BLOCKS
+counts2=IMAGE_FILE_BLOCKS
+counts3=DTB_FILE_BLOCKS
+counts4=INITRD_FILE_BLOCKS
+counts5=ROOTFS_FILE_BLOCKS
 
 for i in 1 2 3 4 5; do
 	good1=0
@@ -149,15 +149,15 @@ for i in 1 2 3 4 5; do
 
 	if [ $i = 1 ]; then
 		# fill in sizes after info is done
-		sizes2=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 | head -c 15 | tail -c 15)
+		sizes2=$(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE | head -c INFO_BYTES | tail -c INFO_BYTES)
 		echo "sizes2 is $sizes2" > /dev/kmsg
-		sizes3=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 | head -c 30 | tail -c 15)
+		sizes3=$(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE | head -c $(echo INFO_BYTES \* 2 | bc) | tail -c INFO_BYTES)
 		echo "sizes3 is $sizes3" > /dev/kmsg
-		sizes4=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 | head -c 45 | tail -c 15)
+		sizes4=$(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE | head -c $(echo INFO_BYTES \* 3 | bc) | tail -c INFO_BYTES)
 		echo "sizes4 is $sizes4" > /dev/kmsg
-		sizes5=$(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512 | head -c 60 | tail -c 15)
+		sizes5=$(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE | head -c $(echo INFO_BYTES \* 4 | bc) | tail -c INFO_BYTES)
 		echo "sizes5 is $sizes5" > /dev/kmsg
-		echo $(dd if=/dev/mmcblk0p1 skip=0 count=1 bs=512) > /dev/kmsg
+		echo $(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE) > /dev/kmsg
 	fi
 done
 

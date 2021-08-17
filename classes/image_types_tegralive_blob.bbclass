@@ -16,7 +16,6 @@ IMAGE_NAME_SUFFIX ??= ".rootfs"
 # set this value to 2048 (2MiB alignment).
 IMAGE_ROOTFS_ALIGNMENT ?= "1"
 
-
 oe_mkblobfs () {
 
 	# Compress Image (Remove J flag for no compression)
@@ -36,7 +35,7 @@ oe_mkblobfs () {
 	touch ${IMAGE_ROOTFS_TMP}/info
 	for file in boot/Image boot/dtb boot/initrd live_rootfs.tar; do
 		size=$(wc -c ${IMAGE_ROOTFS_TMP}/${file} | awk '{print $1}')
-		printf "%015u" $size >> ${IMAGE_ROOTFS_TMP}/info
+		printf "%0${INFO_BYTES}u" $size >> ${IMAGE_ROOTFS_TMP}/info
 	done
 
 	# Populate `hash/` directory with md5sums
@@ -45,32 +44,32 @@ oe_mkblobfs () {
 		md5sum ${IMAGE_ROOTFS_TMP}/$file > ${IMAGE_ROOTFS_TMP}/hash/$(basename $file)
 	done
 
-        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/Image) -ge 46080000 ]; then
+        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/Image) -ge $(echo ${IMAGE_FILE_BLOCKS} \* ${BLOCK_SIZE} | bc) ]; then
                 bbfatal Image file needs more space allocated
         fi
-        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/dtb) -ge 1024000 ]; then
+        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/dtb) -ge $(echo ${DTB_FILE_BLOCKS} \* ${BLOCK_SIZE} | bc) ]; then
                 bbfatal dtb file needs more space allocated
         fi
-        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/initrd) -ge 3072000 ]; then
+        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/initrd) -ge $(echo ${INITRD_FILE_BLOCKS} \* ${BLOCK_SIZE} | bc) ]; then
                 bbfatal initrd file needs more space allocated
         fi
-        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/live_rootfs.tar) -ge 4044800000 ]; then
+        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/live_rootfs.tar) -ge $(echo ${ROOTFS_FILE_BLOCKS} \* ${BLOCK_SIZE} | bc) ]; then
                 bbfatal rootfs.tar file needs more space allocated
         fi
 
 	# Create the blob
 	bbdebug 1 "Executing dd commands to build blob"
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/info seek=0 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/info seek=1 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/Image seek=2 count=90000 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/Image seek=90002 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/dtb seek=90003 count=2000 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/dtb seek=92003 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/initrd seek=92004 count=6000 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/initrd seek=98004 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/live_rootfs.tar seek=98005 count=7900000 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/live_rootfs.tar seek=7998005 count=1 obs=512
-	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=/dev/zero seek=7998008 obs=512 count=0
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/info seek=${INFO_FILE_OFFSET} count=${INFO_FILE_BLOCKS} obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/info seek=${INFO_HASH_OFFSET} count=1 obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/Image seek=${IMAGE_FILE_OFFSET} count=${IMAGE_FILE_BLOCKS} obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/Image seek=${IMAGE_HASH_OFFSET} count=1 obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/dtb seek=${DTB_FILE_OFFSET} count=${DTB_FILE_BLOCKS} obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/dtb seek=${DTB_HASH_OFFSET} count=1 obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/boot/initrd seek=${INITRD_FILE_OFFSET} count=${INITRD_FILE_BLOCKS} obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/initrd seek=${INITRD_HASH_OFFSET} count=1 obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/live_rootfs.tar seek=${ROOTFS_FILE_OFFSET} count=${ROOTFS_FILE_BLOCKS} obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/live_rootfs.tar seek=${ROOTFS_HASH_OFFSET} count=1 obs=${BLOCK_SIZE}
+	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=/dev/zero seek="`echo ${ROOTFS_HASH_OFFSET} + 3 | bc`" obs=${BLOCK_SIZE} count=0
 }
 
 IMAGE_CMD_blob = "oe_mkblobfs"
