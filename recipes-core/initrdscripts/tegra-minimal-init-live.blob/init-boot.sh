@@ -12,7 +12,7 @@ mount -t sysfs sysfs /sys
 echo "Creating ram disk" > /dev/kmsg
 mkdir -p /mnt/ramdisk
 echo "Made directory" > /dev/kmsg
-mount -t tmpfs -o size=${ROOTFSPART_SIZE} tmpfs /mnt/ramdisk
+mount -t tmpfs -o size=ROOTFSPART_SIZE tmpfs /mnt/ramdisk
 echo "Mounted" > /dev/kmsg
 
 rootdev=""
@@ -29,7 +29,7 @@ function mount_and_checksum() {
 		cd /
 		extract_and_boot /mnt/rootfs/live_rootfs.tar
 		umount /mnt/ramdisk
-		mount -t tmpfs -o size=${ROOTFSPART_SIZE} tmpfs /mnt/ramdisk
+		mount -t tmpfs -o size=ROOTFSPART_SIZE tmpfs /mnt/ramdisk
 	else
 		echo "Unable to mount ${1} with code (${mount_rc}), switching sides" > /dev/kmsg
 	fi
