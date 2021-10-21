@@ -45,16 +45,16 @@ oe_mkblobfs () {
 	done
 
         if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/Image) -ge $(echo ${IMAGE_FILE_BLOCKS} \* ${BLOCK_SIZE} | bc) ]; then
-                bbfatal Image file needs more space allocated
+                bbfatal "Image file needs more space allocated (size is $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/Image) bytes)"
         fi
         if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/dtb) -ge $(echo ${DTB_FILE_BLOCKS} \* ${BLOCK_SIZE} | bc) ]; then
-                bbfatal dtb file needs more space allocated
+                bbfatal "dtb file needs more space allocated (size is $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/dtb) bytes)"
         fi
         if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/initrd) -ge $(echo ${INITRD_FILE_BLOCKS} \* ${BLOCK_SIZE} | bc) ]; then
-                bbfatal initrd file needs more space allocated
+                bbfatal "initrd file needs more space allocated (size is $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/initrd) bytes)"
         fi
-        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/boot/live_rootfs.tar) -ge $(echo ${ROOTFS_FILE_BLOCKS} \* ${BLOCK_SIZE} | bc) ]; then
-                bbfatal rootfs.tar file needs more space allocated
+        if [ $(stat -c %s ${IMAGE_ROOTFS_TMP}/live_rootfs.tar) -ge $(echo ${ROOTFS_FILE_BLOCKS} \* ${BLOCK_SIZE} | bc) ]; then
+                bbfatal "rootfs.tar file needs more space allocated (size is $(stat -c %s ${IMAGE_ROOTFS_TMP}/live_rootfs.tar) bytes)"
         fi
 
 	# Create the blob

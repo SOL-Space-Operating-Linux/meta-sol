@@ -12,7 +12,7 @@ COMPATIBLE_MACHINE = "(tegra)"
 S = "${WORKDIR}"
 
 do_install() {
-    replace_vars()
+    replace_vars
 
     install -m 0755 ${WORKDIR}/init-boot.sh ${D}/init
     install -m 0555 -d ${D}/proc ${D}/sys
