@@ -44,7 +44,7 @@ index c52bad84a4..1c61866935 100644
  	int abort = 0;
  
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..3635bd95bb 100644
+index 2116a9e0a2..8ee85a4235 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -2,16 +2,19 @@
@@ -69,7 +69,7 @@ index 2116a9e0a2..3635bd95bb 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -23,48 +26,142 @@ __weak void show_boot_progress(int val) {}
+@@ -23,48 +26,145 @@ __weak void show_boot_progress(int val) {}
  static void run_preboot_environment_command(void)
  {
  #ifdef CONFIG_PREBOOT
@@ -217,11 +217,14 @@ index 2116a9e0a2..3635bd95bb 100644
 +
 +    if(!abortboot(5)) {
 +        char initrd_loc[YOCTO_INFO_BYTES*2] = "";
-+		strcat(initrd_loc, num_to_string(outputs[3]));
-+		strcat(initrd_loc, ":");
-+        char *argv[4] = {"booti", num_to_string(outputs[1]),
-+                         strcat(initrd_loc, num_to_string(sizes[3])),
-+                         num_to_string(outputs[2])};
++        sprintf(initrd_loc, "%x:%x", outputs[3], sizes[3]);
++		char image_loc[YOCTO_INFO_BYTES] = "";
++        sprintf(image_loc, "%x", outputs[1]);
++        char dtb_loc[YOCTO_INFO_BYTES] = "";
++        sprintf(dtb_loc, "%x", outputs[2]);
++        char *argv[4] = {"booti", image_loc,
++                         initrd_loc,
++                         dtb_loc};
 +        cmd_tbl_t *bcmd = find_cmd("booti");
 +        do_booti(bcmd, 0, 4, argv);
 +    } else {
@@ -234,7 +237,7 @@ index 2116a9e0a2..3635bd95bb 100644
  }
 diff --git a/common/tmr.c b/common/tmr.c
 new file mode 100644
-index 0000000000..4ca6e55cac
+index 0000000000..a46365792f
 --- /dev/null
 +++ b/common/tmr.c
 @@ -0,0 +1,169 @@
