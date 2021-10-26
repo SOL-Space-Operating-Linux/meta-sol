@@ -47,26 +47,28 @@ do_compile_prepend() {
         -e "s/YOCTO_MAX_FILE_BLOCKS/${MAX_FILE_BLOCKS}/g" \
     -i ${WORKDIR}/git/common/tmr.c
 
-    echo "INFO_FILE_BLOCKS "${INFO_FILE_BLOCKS} > /home/ssrl/thingy.log
-    echo "IMAGE_FILE_BLOCKS "${IMAGE_FILE_BLOCKS} >> /home/ssrl/thingy.log
-    echo "DTB_FILE_BLOCKS "${DTB_FILE_BLOCKS} >> /home/ssrl/thingy.log
-    echo "INITRD_FILE_BLOCKS "${INITRD_FILE_BLOCKS} >> /home/ssrl/thingy.log
-    echo "ROOTFS_FILE_BLOCKS "${ROOTFS_FILE_BLOCKS} >> /home/ssrl/thingy.log
 
-    echo "MAX_FILE_BLOCKS "${MAX_FILE_BLOCKS} >> /home/ssrl/thingy.log
+    install -m 0755 -d ${WORKDIR}/uboot_log/
+    echo "INFO_FILE_BLOCKS "${INFO_FILE_BLOCKS} > ${WORKDIR}/uboot_log/replace.log
+    echo "IMAGE_FILE_BLOCKS "${IMAGE_FILE_BLOCKS} >> ${WORKDIR}/uboot_log/replace.log
+    echo "DTB_FILE_BLOCKS "${DTB_FILE_BLOCKS} >> ${WORKDIR}/uboot_log/replace.log
+    echo "INITRD_FILE_BLOCKS "${INITRD_FILE_BLOCKS} >> ${WORKDIR}/uboot_log/replace.log
+    echo "ROOTFS_FILE_BLOCKS "${ROOTFS_FILE_BLOCKS} >> ${WORKDIR}/uboot_log/replace.log
 
-    echo "INFO_FILE_OFFSET "${INFO_FILE_OFFSET} >> /home/ssrl/thingy.log
-    echo "INFO_HASH_OFFSET "${INFO_HASH_OFFSET} >> /home/ssrl/thingy.log
-    echo "IMAGE_FILE_OFFSET "${IMAGE_FILE_OFFSET} >> /home/ssrl/thingy.log
-    echo "IMAGE_HASH_OFFSET "${IMAGE_HASH_OFFSET} >> /home/ssrl/thingy.log
-    echo "DTB_FILE_OFFSET "${DTB_FILE_OFFSET} >> /home/ssrl/thingy.log
-    echo "DTB_HASH_OFFSET "${DTB_HASH_OFFSET} >> /home/ssrl/thingy.log
-    echo "INITRD_FILE_OFFSET "${INITRD_FILE_OFFSET} >> /home/ssrl/thingy.log
-    echo "INITRD_HASH_OFFSET "${INITRD_HASH_OFFSET} >> /home/ssrl/thingy.log
-    echo "ROOTFS_FILE_OFFSET "${ROOTFS_FILE_OFFSET} >> /home/ssrl/thingy.log
-    echo "ROOTFS_HASH_OFFSET "${ROOTFS_HASH_OFFSET} >> /home/ssrl/thingy.log
+    echo "MAX_FILE_BLOCKS "${MAX_FILE_BLOCKS} >> ${WORKDIR}/uboot_log/replace.log
+
+    echo "INFO_FILE_OFFSET "${INFO_FILE_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
+    echo "INFO_HASH_OFFSET "${INFO_HASH_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
+    echo "IMAGE_FILE_OFFSET "${IMAGE_FILE_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
+    echo "IMAGE_HASH_OFFSET "${IMAGE_HASH_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
+    echo "DTB_FILE_OFFSET "${DTB_FILE_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
+    echo "DTB_HASH_OFFSET "${DTB_HASH_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
+    echo "INITRD_FILE_OFFSET "${INITRD_FILE_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
+    echo "INITRD_HASH_OFFSET "${INITRD_HASH_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
+    echo "ROOTFS_FILE_OFFSET "${ROOTFS_FILE_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
+    echo "ROOTFS_HASH_OFFSET "${ROOTFS_HASH_OFFSET} >> ${WORKDIR}/uboot_log/replace.log
     
-    echo "INFO_BYTES "${INFO_BYTES} >> /home/ssrl/thingy.log
+    echo "INFO_BYTES "${INFO_BYTES} >> ${WORKDIR}/uboot_log/replace.log
 
-    echo $(ls ${WORKDIR}/git/common/main.c) >> /home/ssrl/thingy.log
+    echo $(ls ${WORKDIR}/git/common/main.c) >> ${WORKDIR}/uboot_log/replace.log
 }

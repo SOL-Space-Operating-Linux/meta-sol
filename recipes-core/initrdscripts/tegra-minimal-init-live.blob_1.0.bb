@@ -50,8 +50,23 @@ replace_vars() {
         -e "s/INFO_BYTES/${INFO_BYTES}/g" \
         -e "s/BLOCK_SIZE/${BLOCK_SIZE}/g" \
         -e "s/MAX_FILE_BLOCKS/${MAX_FILE_BLOCKS}/g" \
-    -i ${WORKDIR}/init-boot.sh
+        -i ${WORKDIR}/init-boot.sh
+
+    install -m 0755 ${WORKDIR}/init-boot.sh ${D}/init
+    install -m 0555 -d ${D}/proc ${D}/sys
+    install -m 0755 -d ${D}/dev ${D}/mnt ${D}/run ${D}/usr
+    install -m 1777 -d ${D}/tmp
+    mknod -m 622 ${D}/dev/console c 5 1
+    install -d ${D}${sysconfdir}
+    if [ -e ${WORKDIR}/platform-preboot-cboot.sh ]; then
+        cat ${WORKDIR}/platform-preboot-cboot.sh ${WORKDIR}/platform-preboot.sh > ${WORKDIR}/platform-preboot.tmp
+        install -m 0644 ${WORKDIR}/platform-preboot.tmp ${D}${sysconfdir}/platform-preboot
+        rm ${WORKDIR}/platform-preboot.tmp
+    else
+	install -m 0644 ${WORKDIR}/platform-preboot.sh ${D}${sysconfdir}/platform-preboot
+    fi
 }
+
 
 RDEPENDS_${PN} = "${@'util-linux-blkid' if d.getVar('PREFERRED_PROVIDER_virtual/bootloader').startswith('cboot') else ''}"
 FILES_${PN} = "/"
