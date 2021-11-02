@@ -44,21 +44,10 @@ index c52bad84a4..1c61866935 100644
  	int abort = 0;
  
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..8ee85a4235 100644
+index 2116a9e0a2..f4ce089633 100644
 --- a/common/main.c
 +++ b/common/main.c
-@@ -2,16 +2,19 @@
-  * (C) Copyright 2000
-  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
-  *
-- * SPDX-License-Identifier:	GPL-2.0+
-+ * SPDX-License-Identifier:    GPL-2.0+
-  */
- 
--/* #define	DEBUG	*/
-+/* #define    DEBUG    */
- 
- #include <common.h>
+@@ -11,7 +11,10 @@
  #include <autoboot.h>
  #include <cli.h>
  #include <console.h>
@@ -69,88 +58,12 @@ index 2116a9e0a2..8ee85a4235 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -23,48 +26,145 @@ __weak void show_boot_progress(int val) {}
- static void run_preboot_environment_command(void)
- {
- #ifdef CONFIG_PREBOOT
--	char *p;
-+    char *p;
- 
--	p = getenv("preboot");
--	if (p != NULL) {
-+    p = getenv("preboot");
-+    if (p != NULL) {
- # ifdef CONFIG_AUTOBOOT_KEYED
--		int prev = disable_ctrlc(1);	/* disable Control C checking */
-+        int prev = disable_ctrlc(1);    /* disable Control C checking */
- # endif
- 
--		run_command_list(p, -1, 0);
-+        run_command_list(p, -1, 0);
- 
- # ifdef CONFIG_AUTOBOOT_KEYED
--		disable_ctrlc(prev);	/* restore Control C checking */
-+        disable_ctrlc(prev);    /* restore Control C checking */
- # endif
--	}
-+    }
- #endif /* CONFIG_PREBOOT */
- }
- 
-+/*
-+Returns null-terminated string representing the number in hexadecimal,
-+only should be used when the string will be <= YOCTO_INFO_BYTES characters
-+*/
-+static char *num_to_string(ulong size) {
-+    char string_rep[YOCTO_INFO_BYTES]; // won't need more than the width used here
-+    string_rep[YOCTO_INFO_BYTES-1]=0; // null terminate
-+    char *p = &string_rep[YOCTO_INFO_BYTES-2];
-+    ulong tmp;
-+    do {
-+        tmp = size % 16;
-+        if (tmp > 9)
-+            tmp += 7; // if greater than '9', go to 'A'
-+        *p-- = '0' + tmp;
-+        size /= 16;
-+    } while (size > 0);
-+
-+    return p+1;
-+}
-+
- /* We come here after U-Boot is initialised and ready to process commands */
- void main_loop(void)
- {
--	const char *s;
-+    const char *s;
- 
--	bootstage_mark_name(BOOTSTAGE_ID_MAIN_LOOP, "main_loop");
-+    bootstage_mark_name(BOOTSTAGE_ID_MAIN_LOOP, "main_loop");
- 
- #ifdef CONFIG_VERSION_VARIABLE
--	setenv("ver", version_string);  /* set version variable */
-+    setenv("ver", version_string);  /* set version variable */
- #endif /* CONFIG_VERSION_VARIABLE */
- 
--	cli_init();
-+    cli_init();
- 
--	run_preboot_environment_command();
-+    run_preboot_environment_command();
- 
- #if defined(CONFIG_UPDATE_TFTP)
--	update_tftp(0UL, NULL, NULL);
-+    update_tftp(0UL, NULL, NULL);
- #endif /* CONFIG_UPDATE_TFTP */
- 
--	s = bootdelay_process();
--	if (cli_process_fdt(&s))
--		cli_secure_boot_cmd(s);
--
--	autoboot_command(s);
-+    s = bootdelay_process();
-+    if (cli_process_fdt(&s))
-+        cli_secure_boot_cmd(s);
-+
+@@ -62,9 +65,87 @@ void main_loop(void)
+ 	s = bootdelay_process();
+ 	if (cli_process_fdt(&s))
+ 		cli_secure_boot_cmd(s);
++        
++    fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
 +
 +    ulong file_offset[8] = {YOCTO_INFO_FILE_OFFSET, YOCTO_INFO_HASH_OFFSET,
 +                            YOCTO_IMAGE_FILE_OFFSET, YOCTO_IMAGE_HASH_OFFSET,
@@ -232,15 +145,17 @@ index 2116a9e0a2..8ee85a4235 100644
 +        panic("No CLI available");
 +    }
  
+-	autoboot_command(s);
+-
 -	cli_loop();
 -	panic("No CLI available");
  }
 diff --git a/common/tmr.c b/common/tmr.c
 new file mode 100644
-index 0000000000..a46365792f
+index 0000000000..c75b3241a5
 --- /dev/null
 +++ b/common/tmr.c
-@@ -0,0 +1,169 @@
+@@ -0,0 +1,162 @@
 +#include <common.h>
 +#include <console.h>
 +#include <bootretry.h>
@@ -273,33 +188,26 @@ index 0000000000..a46365792f
 +	void *addr = (void *)locations[0];
 +	printf("Reading from mmc\n");
 +	ulong n = blk_dread(mmc_get_blk_desc(mmc), file1, cnt, addr);
-+	printf("Flushing cache\n");
-+	flush_cache((ulong)addr, cnt * YOCTO_BLOCK_SIZE);
 +	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[1];
 +	n = blk_dread(mmc_get_blk_desc(mmc), hash1, 1, addr);
-+	flush_cache((ulong)addr, YOCTO_BLOCK_SIZE);
 +	printf("%lu blocks read: %s\n", n, (n == 1) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[2];
 +	n = blk_dread(mmc_get_blk_desc(mmc), file2, cnt, addr);
-+	flush_cache((ulong)addr, cnt * YOCTO_BLOCK_SIZE);
 +	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[3];
 +	n = blk_dread(mmc_get_blk_desc(mmc), hash2, 1, addr);
-+	flush_cache((ulong)addr, YOCTO_BLOCK_SIZE);
 +	printf("%lu blocks read: %s\n", n, (n == 1) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[4];
 +	n = blk_dread(mmc_get_blk_desc(mmc), file3, cnt, addr);
-+	flush_cache((ulong)addr, cnt * YOCTO_BLOCK_SIZE);
 +	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[5];
 +	n = blk_dread(mmc_get_blk_desc(mmc), hash3, 1, addr);
-+	flush_cache((ulong)addr, YOCTO_BLOCK_SIZE);
 +	printf("%lu blocks read: %s\n", n, (n == 1) ? "OK" : "ERROR");
 +}
 +
