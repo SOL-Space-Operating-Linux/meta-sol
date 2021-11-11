@@ -9,7 +9,7 @@ mount -t devtmpfs none /dev
 mount -t sysfs sysfs /sys
 
 #create ramdisk
-echo "Creating ram disk" > /dev/kmsg
+echo "Creating ram disks" > /dev/kmsg
 mkdir -p /mnt/ramdisk
 echo "Made directory" > /dev/kmsg
 mount -t tmpfs -o size=ROOTFSPART_SIZE tmpfs /mnt/ramdisk
