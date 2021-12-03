@@ -62,7 +62,7 @@ index 2116a9e0a2..f4ce089633 100644
  	s = bootdelay_process();
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
-+        
++    printf("meta-sol version 2.0\n"); // kinda arbitrary
 +    fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
 +
 +    ulong file_offset[8] = {YOCTO_INFO_FILE_OFFSET, YOCTO_INFO_HASH_OFFSET,
@@ -287,11 +287,11 @@ index 0000000000..c75b3241a5
 +	loff_t filesize = bytes;
 +	const ulong first_copy_loc = 0x85000000; // base location to start at for tmr, in u-boot memory
 +	const ulong first_hash_loc = first_copy_loc + YOCTO_MAX_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
-+	const ulong second_copy_loc = first_hash_loc + 50;
++	const ulong second_copy_loc = first_hash_loc + 1024;
 +	const ulong second_hash_loc = second_copy_loc + YOCTO_MAX_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
-+	const ulong third_copy_loc = second_hash_loc + 50;
++	const ulong third_copy_loc = second_hash_loc + 1024;
 +	const ulong third_hash_loc = third_copy_loc + YOCTO_MAX_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
-+	const ulong output_loc = third_hash_loc + 50;
++	const ulong output_loc = third_hash_loc + 1024;
 +	ulong locations[7] = {first_copy_loc, first_hash_loc, second_copy_loc, second_hash_loc, third_copy_loc, third_hash_loc, output_loc};
 +	
 +	load_blobs_with_hashes(file1, hash1, file2, hash2, file3, hash3, filesize, locations);
