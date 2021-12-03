@@ -153,7 +153,7 @@ new file mode 100644
 index 0000000000..a9e3629c0f
 --- /dev/null
 +++ b/common/tmr.c
-@@ -0,0 +1,165 @@
+@@ -0,0 +1,172 @@
 +#include <common.h>
 +#include <console.h>
 +#include <bootretry.h>
@@ -294,6 +294,13 @@ index 0000000000..a9e3629c0f
 +	ulong bytes, ulong output)
 +{
 +	filesize = bytes;
++	locations[0] = 0x85000000; // base location to start at for tmr, in u-boot memory
++	locations[1] = locations[0] + 90000 * 512;
++	locations[2] = locations[1] + 50;
++	locations[3] = locations[2] + 90000 * 512;
++	locations[4] = locations[3] + 50;
++	locations[5] = locations[4] + 90000 * 512;
++	locations[6] = locations[5] + 50;
 +	
 +	load_blobs_with_hashes(file1, hash1, file2, hash2, file3, hash3);
 +	printf("loaded files with hashes\n");
