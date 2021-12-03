@@ -44,7 +44,7 @@ index c52bad84a4..1c61866935 100644
  	int abort = 0;
  
 diff --git a/common/main.c b/common/main.c
-index 2116a9e0a2..0e5001074c 100644
+index 2116a9e0a2..f4ce089633 100644
 --- a/common/main.c
 +++ b/common/main.c
 @@ -11,7 +11,10 @@
@@ -58,102 +58,104 @@ index 2116a9e0a2..0e5001074c 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +66,89 @@ void main_loop(void)
+@@ -62,9 +65,87 @@ void main_loop(void)
+ 	s = bootdelay_process();
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
++        
++    fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
++
++    ulong file_offset[8] = {YOCTO_INFO_FILE_OFFSET, YOCTO_INFO_HASH_OFFSET,
++                            YOCTO_IMAGE_FILE_OFFSET, YOCTO_IMAGE_HASH_OFFSET,
++                            YOCTO_DTB_FILE_OFFSET, YOCTO_DTB_HASH_OFFSET,
++                            YOCTO_INITRD_FILE_OFFSET, YOCTO_INITRD_HASH_OFFSET};
++    ulong part_size = YOCTO_ROOTFSPART_SIZE / YOCTO_BLOCK_SIZE;
++    ulong part_offset[3] = {YOCTO_PARTITION_OFFSET,
++                            YOCTO_PARTITION_OFFSET + part_size,
++                            YOCTO_PARTITION_OFFSET + (2 * part_size)};
++    ulong outputs[4];
++    outputs[0] = 0xa5000000; // in u-boot memory
++    outputs[1] = outputs[0] + YOCTO_INFO_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
++    outputs[2] = outputs[1] + YOCTO_IMAGE_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
++    outputs[3] = outputs[2] + YOCTO_DTB_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
++    ulong sizes[4];
++    sizes[0] = YOCTO_INFO_BYTES * 4; //info file, 4 filesizes
++    char *safe = "s=----";
++
++    printf("TMRing info files\n");
++    if(
++        tmr_blob(
++            part_offset[0] + file_offset[0],
++            part_offset[0] + file_offset[1],
++            part_offset[1] + file_offset[0],
++            part_offset[1] + file_offset[1],
++            part_offset[2] + file_offset[0],
++            part_offset[2] + file_offset[1],
++            sizes[0], outputs[0])
++    ) {
++        safe[2] = 'x';
++    }
++    
++    printf("Reading info for filesizes\n");
++    char tmp[YOCTO_INFO_BYTES];
++    char *info = (char *)map_sysmem(outputs[0], YOCTO_INFO_BYTES*3);
++    for (int i = 0; i < 3; i ++) {
++        memcpy(tmp, info + YOCTO_INFO_BYTES * i, YOCTO_INFO_BYTES);
++        sizes[i+1] = simple_strtoul(tmp, NULL, 10);
++    }
++    unmap_sysmem((const void*) info);
++
++    for (int i = 1; i < 4; i ++) {
++        printf("TMRing file #%d of size %lu\n", i, sizes[i]);
++        if(
++            !tmr_blob(
++                part_offset[0] + file_offset[2*i],
++                part_offset[0] + file_offset[2*i+1],
++                part_offset[1] + file_offset[2*i],
++                part_offset[1] + file_offset[2*i+1],
++                part_offset[2] + file_offset[2*i],
++                part_offset[2] + file_offset[2*i+1],
++                sizes[i], outputs[i])
++        ) {
++            // pass info to kernel
++            safe[i+2] = 'x';
++        }
++    }
++
++    // TODO: See if we can find a way to make use of bootargs
++    //setenv("bootargs", safe);
++    char bootargs[CONFIG_SYS_CBSIZE];
++    cli_simple_process_macros("${cbootargs} root=/dev/ram0 rw rootwait ${bootargs}", bootargs);
++    setenv("bootargs", bootargs);
++
++    if(!abortboot(5)) {
++        char initrd_loc[YOCTO_INFO_BYTES*2] = "";
++        sprintf(initrd_loc, "%x:%x", outputs[3], sizes[3]);
++		char image_loc[YOCTO_INFO_BYTES] = "";
++        sprintf(image_loc, "%x", outputs[1]);
++        char dtb_loc[YOCTO_INFO_BYTES] = "";
++        sprintf(dtb_loc, "%x", outputs[2]);
++        char *argv[4] = {"booti", image_loc,
++                         initrd_loc,
++                         dtb_loc};
++        cmd_tbl_t *bcmd = find_cmd("booti");
++        do_booti(bcmd, 0, 4, argv);
++    } else {
++        cli_loop();
++        panic("No CLI available");
++    }
  
-+	// error: no file system --> Assume BLOB
-+	ulong file_offset[8] = {0, 1, 2, 90002, 90003, 92003, 92004, 98004};
-+	ulong part_size = 4096000000 / 512;
-+	ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
-+	ulong outputs[4];
-+	outputs[0] = 0xa5000000; // in u-boot memory
-+	outputs[1] = outputs[0] + 1 * 512;
-+	outputs[2] = outputs[1] + 90000 * 512;
-+	outputs[3] = outputs[2] + 2000 * 512;
-+	ulong sizes[4];
-+	sizes[0] = 60; //info file
-+	char *safe = "s=----";
-+
-+	printf("TMRing info files\n");
-+	if(
-+		tmr_blob(
-+			part_offset[0] + file_offset[0],
-+			part_offset[0] + file_offset[1],
-+			part_offset[1] + file_offset[0],
-+			part_offset[1] + file_offset[1],
-+			part_offset[2] + file_offset[0],
-+			part_offset[2] + file_offset[1],
-+			sizes[0], outputs[0])
-+	) {
-+		safe[2] = 'x';
-+	}
-+	
-+	printf("Reading info for filesizes\n");
-+	char tmp[15];
-+	char *info = (char *)map_sysmem(locations[0], 45);
-+	for (int i = 0; i < 3; i ++) {
-+		memcpy(tmp, info + 15 * i, 15);
-+		sizes[i+1] = simple_strtoul(tmp, NULL, 10);
-+	}
-+	unmap_sysmem((const void*) info);
-+
-+	for (int i = 1; i < 4; i ++) {
-+		printf("TMRing file #%d of size %lu\n", i, sizes[i]);
-+		if(
-+			!tmr_blob(
-+				part_offset[0] + file_offset[2*i],
-+				part_offset[0] + file_offset[2*i+1],
-+				part_offset[1] + file_offset[2*i],
-+				part_offset[1] + file_offset[2*i+1],
-+				part_offset[2] + file_offset[2*i],
-+				part_offset[2] + file_offset[2*i+1],
-+				sizes[i], outputs[i])
-+		) {
-+			// pass info to kernel
-+			safe[i+2] = 'x';
-+		}
-+	}
-+
-+	// TODO: See if we can find a way to make use of bootargs
-+	//setenv("bootargs", safe);
-+	char bootargs[CONFIG_SYS_CBSIZE];
-+	cli_simple_process_macros("${cbootargs} root=/dev/ram0 rw rootwait ${bootargs}", bootargs);
-+	setenv("bootargs", bootargs);
-+
-+	if(!abortboot(5)) {
-+		char initrd_loc[15*2] = "";
-+		sprintf(initrd_loc, "%x:%x", outputs[3], sizes[3]);
-+		char image_loc[15] = "";
-+		sprintf(image_loc, "%x", outputs[1]);
-+		char dtb_loc[15] = "";
-+		sprintf(dtb_loc, "%x", outputs[2]);
-+		char *argv[4] = {
-+						"booti",
-+						image_loc,
-+						initrd_loc,
-+						dtb_loc
-+						};
-+		cmd_tbl_t *bcmd = find_cmd("booti");
-+		do_booti(bcmd, 0, 4, argv);
-+	} else {
-+		cli_loop();
-+		panic("No CLI available");
-+	}
-+
-+	
-+
-+	
-+
- 	autoboot_command(s);
- 
- 	cli_loop();
+-	autoboot_command(s);
+-
+-	cli_loop();
+-	panic("No CLI available");
+ }
 diff --git a/common/tmr.c b/common/tmr.c
 new file mode 100644
-index 0000000000..a9e3629c0f
+index 0000000000..c75b3241a5
 --- /dev/null
 +++ b/common/tmr.c
-@@ -0,0 +1,172 @@
+@@ -0,0 +1,162 @@
 +#include <common.h>
 +#include <console.h>
 +#include <bootretry.h>
@@ -167,14 +169,11 @@ index 0000000000..a9e3629c0f
 +#include <blk.h>
 +#include <mmc.h>
 +
-+loff_t filesize;
-+ulong locations[7] = {0x85000000,0x89000000,0x90000000,0x94000000,0x95000000,0x99000000,0xa0000000};
-+
-+
 +static void load_blobs_with_hashes(
 +	ulong file1, ulong hash1, 
 +	ulong file2, ulong hash2,
-+	ulong file3, ulong hash3
++	ulong file3, ulong hash3,
++	loff_t filesize, ulong *locations
 +)
 +{
 +	struct mmc *mmc;
@@ -184,42 +183,35 @@ index 0000000000..a9e3629c0f
 +	printf("Initializing mmc device 0\n");
 +	mmc_init(mmc);
 +
-+	u32 cnt = filesize / 512 + 1;
++	u32 cnt = filesize / YOCTO_BLOCK_SIZE + 1;
 +
 +	void *addr = (void *)locations[0];
 +	printf("Reading from mmc\n");
 +	ulong n = blk_dread(mmc_get_blk_desc(mmc), file1, cnt, addr);
-+	printf("Flushing cache\n");
-+	flush_cache((ulong)addr, cnt * 512);
 +	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[1];
 +	n = blk_dread(mmc_get_blk_desc(mmc), hash1, 1, addr);
-+	flush_cache((ulong)addr, 512);
 +	printf("%lu blocks read: %s\n", n, (n == 1) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[2];
 +	n = blk_dread(mmc_get_blk_desc(mmc), file2, cnt, addr);
-+	flush_cache((ulong)addr, cnt * 512);
 +	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[3];
 +	n = blk_dread(mmc_get_blk_desc(mmc), hash2, 1, addr);
-+	flush_cache((ulong)addr, 512);
 +	printf("%lu blocks read: %s\n", n, (n == 1) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[4];
 +	n = blk_dread(mmc_get_blk_desc(mmc), file3, cnt, addr);
-+	flush_cache((ulong)addr, cnt * 512);
 +	printf("%lu blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
 +
 +	addr = (void *)locations[5];
 +	n = blk_dread(mmc_get_blk_desc(mmc), hash3, 1, addr);
-+	flush_cache((ulong)addr, 512);
 +	printf("%lu blocks read: %s\n", n, (n == 1) ? "OK" : "ERROR");
 +}
 +
-+int check_hash(int file) {
++int check_hash(int file, loff_t filesize, ulong *locations) {
 +	unsigned char calculated_sum[16], tmp[2];
 +	
 +	void *buf = map_sysmem(locations[file*2], filesize);
@@ -282,8 +274,7 @@ index 0000000000..a9e3629c0f
 +
 +}
 +
-+
-+static void write_output(ulong input, ulong output) {
++static void write_output(ulong input, ulong output, loff_t filesize) {
 +	memcpy((void *)output, (void *)input, filesize);
 +}
 +
@@ -293,37 +284,38 @@ index 0000000000..a9e3629c0f
 +	ulong file3, ulong hash3,
 +	ulong bytes, ulong output)
 +{
-+	filesize = bytes;
-+	//locations[0] = 0x85000000; // base location to start at for tmr, in u-boot memory
-+	locations[1] = locations[0] + 90000 * 512;
-+	locations[2] = locations[1] + 1024;
-+	locations[3] = locations[2] + 90000 * 512;
-+	locations[4] = locations[3] + 1024;
-+	locations[5] = locations[4] + 90000 * 512;
-+	locations[6] = locations[5] + 1024;
++	loff_t filesize = bytes;
++	const ulong first_copy_loc = 0x85000000; // base location to start at for tmr, in u-boot memory
++	const ulong first_hash_loc = first_copy_loc + YOCTO_MAX_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
++	const ulong second_copy_loc = first_hash_loc + 50;
++	const ulong second_hash_loc = second_copy_loc + YOCTO_MAX_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
++	const ulong third_copy_loc = second_hash_loc + 50;
++	const ulong third_hash_loc = third_copy_loc + YOCTO_MAX_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
++	const ulong output_loc = third_hash_loc + 50;
++	ulong locations[7] = {first_copy_loc, first_hash_loc, second_copy_loc, second_hash_loc, third_copy_loc, third_hash_loc, output_loc};
 +	
-+	load_blobs_with_hashes(file1, hash1, file2, hash2, file3, hash3);
++	load_blobs_with_hashes(file1, hash1, file2, hash2, file3, hash3, filesize, locations);
 +	printf("loaded files with hashes\n");
-+	if (check_hash(0)) {
++	if (check_hash(0, filesize, locations)) {
 +		printf("hash for original file was correct\n");
-+		write_output(locations[0], output);
++		write_output(locations[0], output, filesize);
 +		return true;
-+	} else if (check_hash(1)) {
++	} else if (check_hash(1, filesize, locations)) {
 +		fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
 +		printf("hash for first backup was correct\n");
-+		write_output(locations[2], output);
++		write_output(locations[2], output, filesize);
 +		return false;
-+	} else if (check_hash(2)) {
++	} else if (check_hash(2, filesize, locations)) {
 +		fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
 +		printf("hash for second backup was correct\n");
-+		write_output(locations[4], output);
++		write_output(locations[4], output, filesize);
 +		return false;
 +	}
 +
 +	printf("none of the hashes were correct. storing tmr result at 0xa0000000\n");
 +
 +	majority_wd(locations[0], locations[2], locations[4], locations[6], filesize);
-+	write_output(locations[6], output);
++	write_output(locations[6], output, filesize);
 +	return false;
 +}
 \ No newline at end of file
