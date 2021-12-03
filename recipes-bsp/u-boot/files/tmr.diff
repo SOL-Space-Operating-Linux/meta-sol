@@ -58,123 +58,89 @@ index 2116a9e0a2..0e5001074c 100644
  
  DECLARE_GLOBAL_DATA_PTR;
  
-@@ -63,6 +66,123 @@ void main_loop(void)
+@@ -63,6 +66,89 @@ void main_loop(void)
  	if (cli_process_fdt(&s))
  		cli_secure_boot_cmd(s);
  
-+	if(fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT))
-+	{
-+		// error: no file system --> Assume BLOB
-+		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 92003, 92004, 98004};
-+		ulong part_size = 4096000000 / 512;
-+		ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
-+		ulong outputs[4];
-+		outputs[0] = 0xa5000000; // in u-boot memory
-+		outputs[1] = outputs[0] + 1 * 512;
-+		outputs[2] = outputs[1] + 90000 * 512;
-+		outputs[3] = outputs[2] + 2000 * 512;
-+		ulong sizes[4];
-+		sizes[0] = 60; //info file
-+		char *safe = "s=----";
++	// error: no file system --> Assume BLOB
++	ulong file_offset[8] = {0, 1, 2, 90002, 90003, 92003, 92004, 98004};
++	ulong part_size = 4096000000 / 512;
++	ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
++	ulong outputs[4];
++	outputs[0] = 0xa5000000; // in u-boot memory
++	outputs[1] = outputs[0] + 1 * 512;
++	outputs[2] = outputs[1] + 90000 * 512;
++	outputs[3] = outputs[2] + 2000 * 512;
++	ulong sizes[4];
++	sizes[0] = 60; //info file
++	char *safe = "s=----";
 +
-+		printf("TMRing info files\n");
-+		if(
-+			tmr_blob(
-+				part_offset[0] + file_offset[0],
-+				part_offset[0] + file_offset[1],
-+				part_offset[1] + file_offset[0],
-+				part_offset[1] + file_offset[1],
-+				part_offset[2] + file_offset[0],
-+				part_offset[2] + file_offset[1],
-+				sizes[0], outputs[0])
-+		) {
-+			safe[2] = 'x';
-+		}
-+		
-+		printf("Reading info for filesizes\n");
-+		char tmp[15];
-+		char *info = (char *)map_sysmem(locations[0], 45);
-+		for (int i = 0; i < 3; i ++) {
-+			memcpy(tmp, info + 15 * i, 15);
-+			sizes[i+1] = simple_strtoul(tmp, NULL, 10);
-+		}
-+		unmap_sysmem((const void*) info);
-+
-+		for (int i = 1; i < 4; i ++) {
-+			printf("TMRing file #%d of size %lu\n", i, sizes[i]);
-+			if(
-+				!tmr_blob(
-+					part_offset[0] + file_offset[2*i],
-+					part_offset[0] + file_offset[2*i+1],
-+					part_offset[1] + file_offset[2*i],
-+					part_offset[1] + file_offset[2*i+1],
-+					part_offset[2] + file_offset[2*i],
-+					part_offset[2] + file_offset[2*i+1],
-+					sizes[i], outputs[i])
-+			) {
-+				// pass info to kernel
-+				safe[i+2] = 'x';
-+			}
-+		}
-+
-+		// TODO: See if we can find a way to make use of bootargs
-+		//setenv("bootargs", safe);
-+		char bootargs[CONFIG_SYS_CBSIZE];
-+		cli_simple_process_macros("${cbootargs} root=/dev/ram0 rw rootwait ${bootargs}", bootargs);
-+		setenv("bootargs", bootargs);
-+
-+		if(!abortboot(5)) {
-+			char initrd_loc[15*2] = "";
-+			sprintf(initrd_loc, "%x:%x", outputs[3], sizes[3]);
-+			char image_loc[15] = "";
-+			sprintf(image_loc, "%x", outputs[1]);
-+			char dtb_loc[15] = "";
-+			sprintf(dtb_loc, "%x", outputs[2]);
-+			char *argv[4] = {
-+							"booti",
-+							image_loc,
-+							initrd_loc,
-+							dtb_loc
-+							};
-+			cmd_tbl_t *bcmd = find_cmd("booti");
-+			do_booti(bcmd, 0, 4, argv);
-+		} else {
-+			cli_loop();
-+			panic("No CLI available");
-+		}
-+
-+	} 
-+	else
-+	{
-+		char *tmr_names[6];
-+		printf("Reading filenames from info file\n");
-+		loff_t actread;
-+		fs_read("info", 0x84000000, 0, 600, &actread);
-+		printf("Read %lld of 600 bytes\n", actread);
-+		char *all_names = (char *)map_sysmem(0x84000000, 600);
-+
-+		for (int i = 0; i < 6; i ++) {
-+			tmr_names[i] = (char *)malloc(100);
-+			memcpy(tmr_names[i], all_names+100*i, 100);
-+		}
-+
-+		for(int i = 0; i < 3; i ++){
-+			char file1[110] = "/boot/";
-+			char file2[110] = "/boot1/";
-+			char file3[110] = "/boot2/";
-+			char hash[110] = "/boothash/";
-+			strcat(file1, tmr_names[2*i]);
-+			strcat(file2, tmr_names[2*i]);
-+			strcat(file3, tmr_names[2*i]);
-+			strcat(hash, tmr_names[2*i]);
-+			char * const tmr_files[] = {file1, hash, file2, hash, file3, hash};
-+			loff_t tmr_size = (loff_t) simple_strtoul(tmr_names[2*i+1], NULL, 10);
-+			printf("Redundancy for %s, %s, %s, %s with size %lld\n", file1, file2, file3, hash, tmr_size);
-+			tmr_fs(tmr_files, tmr_size); 
-+		}
-+
-+		unmap_sysmem((const void *)all_names);
++	printf("TMRing info files\n");
++	if(
++		tmr_blob(
++			part_offset[0] + file_offset[0],
++			part_offset[0] + file_offset[1],
++			part_offset[1] + file_offset[0],
++			part_offset[1] + file_offset[1],
++			part_offset[2] + file_offset[0],
++			part_offset[2] + file_offset[1],
++			sizes[0], outputs[0])
++	) {
++		safe[2] = 'x';
 +	}
++	
++	printf("Reading info for filesizes\n");
++	char tmp[15];
++	char *info = (char *)map_sysmem(locations[0], 45);
++	for (int i = 0; i < 3; i ++) {
++		memcpy(tmp, info + 15 * i, 15);
++		sizes[i+1] = simple_strtoul(tmp, NULL, 10);
++	}
++	unmap_sysmem((const void*) info);
++
++	for (int i = 1; i < 4; i ++) {
++		printf("TMRing file #%d of size %lu\n", i, sizes[i]);
++		if(
++			!tmr_blob(
++				part_offset[0] + file_offset[2*i],
++				part_offset[0] + file_offset[2*i+1],
++				part_offset[1] + file_offset[2*i],
++				part_offset[1] + file_offset[2*i+1],
++				part_offset[2] + file_offset[2*i],
++				part_offset[2] + file_offset[2*i+1],
++				sizes[i], outputs[i])
++		) {
++			// pass info to kernel
++			safe[i+2] = 'x';
++		}
++	}
++
++	// TODO: See if we can find a way to make use of bootargs
++	//setenv("bootargs", safe);
++	char bootargs[CONFIG_SYS_CBSIZE];
++	cli_simple_process_macros("${cbootargs} root=/dev/ram0 rw rootwait ${bootargs}", bootargs);
++	setenv("bootargs", bootargs);
++
++	if(!abortboot(5)) {
++		char initrd_loc[15*2] = "";
++		sprintf(initrd_loc, "%x:%x", outputs[3], sizes[3]);
++		char image_loc[15] = "";
++		sprintf(image_loc, "%x", outputs[1]);
++		char dtb_loc[15] = "";
++		sprintf(dtb_loc, "%x", outputs[2]);
++		char *argv[4] = {
++						"booti",
++						image_loc,
++						initrd_loc,
++						dtb_loc
++						};
++		cmd_tbl_t *bcmd = find_cmd("booti");
++		do_booti(bcmd, 0, 4, argv);
++	} else {
++		cli_loop();
++		panic("No CLI available");
++	}
++
 +	
 +
 +	
@@ -187,7 +153,7 @@ new file mode 100644
 index 0000000000..a9e3629c0f
 --- /dev/null
 +++ b/common/tmr.c
-@@ -0,0 +1,205 @@
+@@ -0,0 +1,165 @@
 +#include <common.h>
 +#include <console.h>
 +#include <bootretry.h>
@@ -204,19 +170,6 @@ index 0000000000..a9e3629c0f
 +loff_t filesize;
 +ulong locations[7] = {0x85000000,0x89000000,0x90000000,0x94000000,0x95000000,0x99000000,0xa0000000};
 +
-+static void load_files_with_hashes(char * const files[]) {
-+	for(ulong i = 0; i < 6; i ++) {
-+		fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
-+		loff_t actread;
-+		if(i % 2) {
-+			fs_read(files[i], locations[i], 0, 32, &actread);
-+			printf("Read %lld of 32 bytes from %s\n", actread, files[i]);
-+		} else {
-+			fs_read(files[i], locations[i], 0, filesize, &actread);
-+			printf("Read %lld of %lld bytes from %s\n", actread, filesize, files[i]);
-+		}
-+	}
-+}
 +
 +static void load_blobs_with_hashes(
 +	ulong file1, ulong hash1, 
@@ -329,33 +282,6 @@ index 0000000000..a9e3629c0f
 +
 +}
 +
-+static void tmr_fs(char * const files[], loff_t size) {
-+	filesize = size;
-+	load_files_with_hashes(files);
-+	loff_t actwrite;
-+	printf("loaded files with hashes\n");
-+	if (check_hash(0)) {
-+		printf("hash for original file was correct\n");
-+		return;
-+	} else if (check_hash(1)) {
-+		fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
-+		printf("hash for first backup was correct\n");
-+		fs_write(files[0], locations[2], 0, filesize, &actwrite);
-+		return;
-+	} else if (check_hash(2)) {
-+		fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
-+		printf("hash for second backup was correct\n");
-+		fs_write(files[0], locations[4], 0, filesize, &actwrite);
-+		return;
-+	}
-+
-+	printf("none of the hashes were correct. storing tmr result at 0xa0000000\n");
-+
-+	majority_wd(locations[0], locations[2], locations[4], locations[6], filesize);
-+	fs_set_blk_dev("mmc", "0:1", FS_TYPE_EXT);
-+	fs_write(files[0], locations[6], 0, filesize, &actwrite);
-+	printf("Wrote tmr result with size %lld of %lld back to %s\n", actwrite, filesize, files[0]);
-+}
 +
 +static void write_output(ulong input, ulong output) {
 +	memcpy((void *)output, (void *)input, filesize);
