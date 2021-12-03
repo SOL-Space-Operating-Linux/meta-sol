@@ -66,9 +66,13 @@ index 2116a9e0a2..0e5001074c 100644
 +	{
 +		// error: no file system --> Assume BLOB
 +		ulong file_offset[8] = {0, 1, 2, 90002, 90003, 92003, 92004, 98004};
-+		ulong part_size = 8000000;
++		ulong part_size = 4096000000 / 512;
 +		ulong part_offset[3] = {4104, 4104+part_size, 4104+(2*part_size)};
-+		ulong outputs[4] = {0xa5000000, 0xa5001000, 0xa9000000, 0xb0000000};
++		ulong outputs[4];
++		outputs[0] = 0xa5000000; // in u-boot memory
++		outputs[1] = outputs[0] + 1 * 512;
++		outputs[2] = outputs[1] + 90000 * 512;
++		outputs[3] = outputs[2] + 2000 * 512;
 +		ulong sizes[4];
 +		sizes[0] = 60; //info file
 +		char *safe = "s=----";
@@ -120,22 +124,18 @@ index 2116a9e0a2..0e5001074c 100644
 +		setenv("bootargs", bootargs);
 +
 +		if(!abortboot(5)) {
-+			char initrd_loc[20] = "b0000000:";
-+			char initrd_size[15];
-+			initrd_size[14]=0; // null terminate
-+			char *p = &initrd_size[13];
-+			// create string from filesize of initrd
-+			ulong i = sizes[3];
-+			ulong tmp;
-+			do {
-+				tmp = i % 16;
-+				if (tmp > 9)
-+					tmp += 7; // if greater than '9', go to 'A'
-+				*p-- = '0' + tmp;
-+				i /= 16;
-+			} while (i > 0);
-+			// p+1 now points to the beginning of size string
-+			char *argv[4] = {"booti", "a5001000", strcat(initrd_loc,p+1), "a9000000"};
++			char initrd_loc[15*2] = "";
++			sprintf(initrd_loc, "%x:%x", outputs[3], sizes[3]);
++			char image_loc[15] = "";
++			sprintf(image_loc, "%x", outputs[1]);
++			char dtb_loc[15] = "";
++			sprintf(dtb_loc, "%x", outputs[2]);
++			char *argv[4] = {
++							"booti",
++							image_loc,
++							initrd_loc,
++							dtb_loc
++							};
 +			cmd_tbl_t *bcmd = find_cmd("booti");
 +			do_booti(bcmd, 0, 4, argv);
 +		} else {
