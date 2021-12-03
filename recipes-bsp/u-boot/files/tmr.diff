@@ -294,7 +294,7 @@ index 0000000000..a9e3629c0f
 +	ulong bytes, ulong output)
 +{
 +	filesize = bytes;
-+	locations[0] = 0x85000000; // base location to start at for tmr, in u-boot memory
++	locations[0] = 0x93000000; // base location to start at for tmr, in u-boot memory
 +	locations[1] = locations[0] + 90000 * 512;
 +	locations[2] = locations[1] + 50;
 +	locations[3] = locations[2] + 90000 * 512;
