@@ -17,7 +17,7 @@ require core-image-sol.bb
 
 # Development features
 IMAGE_FEATURES += "ssh-server-dropbear post-install-logging \
-    debug-tweaks dbg-pkgs \
+    debug-tweaks \
 "
 
 # Packages to install
