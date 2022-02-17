@@ -18,9 +18,9 @@ IMAGE_ROOTFS_ALIGNMENT ?= "1"
 
 oe_mkblobfs () {
 
-	# Compress Image (Remove J flag for no compression)
-    bbdebug 1 "tar -cJf ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar --numeric-owner -C ${IMAGE_ROOTFS} . || [ $? -eq 1 ]"
-    tar -cJf ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar --numeric-owner -C ${IMAGE_ROOTFS} . || [ $? -eq 1 ]
+	# Compress Image (Add J flag for compression)
+    bbdebug 1 "tar -cf ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar --numeric-owner --exclude='${IMAGE_ROOTFS}/boot' -C ${IMAGE_ROOTFS} . || [ $? -eq 1 ]"
+    tar -c --exclude='./boot' -f ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar --numeric-owner -C ${IMAGE_ROOTFS} . || [ $? -eq 1 ]
 
 	rm -rf ${IMAGE_ROOTFS_TMP}
 	mkdir -p ${IMAGE_ROOTFS_TMP}
