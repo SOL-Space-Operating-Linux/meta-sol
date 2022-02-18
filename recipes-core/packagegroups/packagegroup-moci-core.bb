@@ -7,6 +7,9 @@ RDEPENDS_${PN} = " \
     ffmpeg \
     tegra-sfm \
     yolo \
+    yolo-gpu \
+    cudnn \
+    yolo-gpu-cudnn \
     api \
     cuda-toolkit \
 "

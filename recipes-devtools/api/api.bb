@@ -2,9 +2,10 @@ DESCRIPTION = "TX2i API"
 HOMEPAGE = "http://gitlab.smallsat.uga.edu/"
 LICENSE = "CLOSED"
 
-SRC_URI = "file://tx2-controller.tar"
+S = "${WORKDIR}/git"
 
-S = "${WORKDIR}/tx2-controller"
+SRC_URI = "git://gitlab.smallsat.uga.edu/flight-software/moci-software/tx2-controller.git;protocol=https;branch=c++"
+SRCREV = "c0e39e247edb8b6753dfe00409ef271798440142"
 
 inherit pkgconfig cmake
 
