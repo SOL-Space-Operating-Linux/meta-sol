@@ -1,5 +1,14 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-SRC_URI += "file://tmr.diff"
+UBOOT_TEGRA_REPO = "github.com/uga-ssrl/u-boot-tegra-tmr.git"
+SRCBRANCH = "tmr-development"
+SRC_URI = "git://${UBOOT_TEGRA_REPO};protocol=https;branch=${SRCBRANCH}"
+SRCREV = "e06b05eb2a4207f4fdecfd8041a9419141c21ebe"
+
+def get_layer_rev(d):
+    layers = (d.getVar("BBLAYERS") or "").split()
+    for layer in layers:
+        if layer.endswith("meta-sol"):
+            return bb.process.run('git --git-dir={}/.git rev-parse HEAD'.format(layer))[0].strip()
+    return layers
 
 do_compile_prepend() {
 
@@ -23,6 +32,7 @@ do_compile_prepend() {
         -e "s/YOCTO_INFO_BYTES/${INFO_BYTES}/g" \
         -e "s/YOCTO_BLOCK_SIZE/${BLOCK_SIZE}/g" \
         -e "s/YOCTO_MAX_FILE_BLOCKS/${MAX_FILE_BLOCKS}/g" \
+        -e "s/YOCTO_SOL_REF/${@get_layer_rev(d)}/g" \
     -i ${WORKDIR}/git/common/main.c
 
     sed -e "s/YOCTO_INFO_FILE_OFFSET/${INFO_FILE_OFFSET}/g" \
