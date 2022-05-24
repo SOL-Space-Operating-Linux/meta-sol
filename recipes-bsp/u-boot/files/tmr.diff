@@ -95,7 +95,7 @@ index 2116a9e0a2..f4ce089633 100644
 +    ) {
 +        safe[2] = 'x';
 +    }
-+    
++
 +    printf("Reading info for filesizes\n");
 +    char tmp[YOCTO_INFO_BYTES];
 +    char *info = (char *)map_sysmem(outputs[0], YOCTO_INFO_BYTES*3);
@@ -170,7 +170,7 @@ index 0000000000..c75b3241a5
 +#include <mmc.h>
 +
 +static void load_blobs_with_hashes(
-+	ulong file1, ulong hash1, 
++	ulong file1, ulong hash1,
 +	ulong file2, ulong hash2,
 +	ulong file3, ulong hash3,
 +	loff_t filesize, ulong *locations
@@ -213,7 +213,7 @@ index 0000000000..c75b3241a5
 +
 +int check_hash(int file, loff_t filesize, ulong *locations) {
 +	unsigned char calculated_sum[16], tmp[2];
-+	
++
 +	void *buf = map_sysmem(locations[file*2], filesize);
 +	md5_wd(buf, filesize, calculated_sum, 64 << 10);
 +	unmap_sysmem(buf);
@@ -279,7 +279,7 @@ index 0000000000..c75b3241a5
 +}
 +
 +static bool tmr_blob(
-+	ulong file1, ulong hash1, 
++	ulong file1, ulong hash1,
 +	ulong file2, ulong hash2,
 +	ulong file3, ulong hash3,
 +	ulong bytes, ulong output)
@@ -293,7 +293,7 @@ index 0000000000..c75b3241a5
 +	const ulong third_hash_loc = third_copy_loc + YOCTO_MAX_FILE_BLOCKS * YOCTO_BLOCK_SIZE;
 +	const ulong output_loc = third_hash_loc + 1024;
 +	ulong locations[7] = {first_copy_loc, first_hash_loc, second_copy_loc, second_hash_loc, third_copy_loc, third_hash_loc, output_loc};
-+	
++
 +	load_blobs_with_hashes(file1, hash1, file2, hash2, file3, hash3, filesize, locations);
 +	printf("loaded files with hashes\n");
 +	if (check_hash(0, filesize, locations)) {
