@@ -73,6 +73,12 @@ if [ -n "$wait" -a ! -b "${rootdev}" ]; then
     done
 fi
 
+echo "Press any key to stop autoboot" > /dev/kmsg
+read -n 1 -s -r -t 3
+stop=$?
+if [ ${stop} -eq 0 ]; then
+	sh;
+fi
 
 num_paritions="3"
 boot_partition=${start_boot_partition}
