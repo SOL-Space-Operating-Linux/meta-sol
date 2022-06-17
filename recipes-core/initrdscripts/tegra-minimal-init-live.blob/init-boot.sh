@@ -23,7 +23,7 @@ start_boot_partition="1"
 function mount_and_checksum() {
 	echo "Mounting ${1} at /mnt/rootfs" > /dev/kmsg
 	mkdir -p /mnt/rootfs
-	dd if=$1 bs=BLOCK_SIZE skip=$skips5 count=$counts5 | head -c $sizes5 > /mnt/rootfs/live_rootfs.tar
+	mv file /mnt/rootfs/live_rootfs.tar #most recent "file" is the tar
 	mount_rc=$?
 	if [ ${mount_rc} -eq 0 ]; then
 		cd /
@@ -37,7 +37,7 @@ function mount_and_checksum() {
 
 function extract_and_boot() {
 	echo "Starting ramdisk extraction" > /dev/kmsg
-	tar -xf $1 -C /mnt/ramdisk
+	tar -xmf $1 -C /mnt/ramdisk
 	tar_rc=$?
 	if [ ${tar_rc} -ne 0 ]; then
 		echo "Uncompression failed of file ${1} with code (${tar_rc})" > /dev/kmsg
@@ -104,13 +104,24 @@ counts3=DTB_FILE_BLOCKS
 counts4=INITRD_FILE_BLOCKS
 counts5=ROOTFS_FILE_BLOCKS
 
+partsize=ROOTFSPART_SIZE
+
 function checksum() {
 	i=$1
 	j=$2
-	calculated=$(eval dd if="/dev/mmcblk0p\${j}" iflag=skip_bytes skip=\$\(\(\$skips$i*512\)\) count=1 bs=\$sizes$i | md5sum | head -c 32)
-	existing=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$hash_skips$i count=1 | head -c 32)
+
+	# Get some temporary variables
+	part="/dev/mmcblk0p${j}"
+	eval size=\$sizes$i
+	eval skip=\$skips$i
+	toff=`echo $partsize - $skip \* 512 | bc`
+
+	tail -c $toff $part | head -c $size > file$j
+	calculated=$(md5sum file$j | head -c 32)
+	existing=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$hash_skips$i count=1 2>/dev/null | head -c 32)
 	if [ $calculated = $existing ]; then
 		eval echo "1" > good$j
+		eval echo $existing > hash$j
 		echo "file $i version $j matches hash" > /dev/kmsg
 	else
 		eval echo "0" > good$j
@@ -127,6 +138,7 @@ for i in 1 2 3 4 5; do
 
 	for j in 1 2 3; do
 		eval echo "-" > good$j
+		eval echo "-" > hash$j
 		checksum $i $j &
 	done
 
@@ -141,46 +153,56 @@ for i in 1 2 3 4 5; do
 
 	if [ "$good1 $good2 $good3" = "0 0 0" ]; then
         echo "doing boot-tmr" > /dev/kmsg
-		eval boot-tmr \$sizes$i \$skips$i /dev/mmcblk0p1 /dev/mmcblk0p2 /dev/mmcblk0p3
+		eval boot-tmr \$sizes$i \$skips$i /dev/mmcblk0p1 /dev/mmcblk0p2 /dev/mmcblk0p3 file
+
+		# replace BLOBs and hashes in flash
+		md5sum file | head -c 32 > hash
+		for c in 1 2 3; do
+			echo "replacing bad copy: $c" > /dev/kmsg
+			eval dd if=file of="/dev/mmcblk0p\${c}" seek=\$skips$i count=\$counts$i 2>/dev/null
+			eval dd if="hash" of="/dev/mmcblk0p\$c" seek=\$hash_skips$i count=1 2>/dev/null
+		done
+
 	elif [ "$good1 $good2 $good3" != "1 1 1" ]; then
 		# find good copy
         echo "finding good copy" > /dev/kmsg
 		if [ $good1 = 1 ]; then
 			g=1
+			mv file1 file
 		elif [ $good2 = 1 ]; then
 			g=2
+			mv file2 file
 		else
 			g=3
+			mv file3 file
 		fi
 
         echo "good image is $g; replacing bad ones" > /dev/kmsg
 		# replace bad copy/copies
 		for c in 1 2 3; do
 			if [ $(eval echo \$good$c) = 0 ]; then
-				eval dd if="/dev/mmcblk0p\${g}" of="/dev/mmcblk0p\${c}" skip=\$skips$i seek=\$skips$i count=\$counts$i
+				echo "replacing bad copy: $c" > /dev/kmsg
+				eval dd if=file of="/dev/mmcblk0p\${c}" seek=\$skips$i count=\$counts$i 2>/dev/null
+				eval dd if="hash\$g" of="/dev/mmcblk0p\$c" seek=\$hash_skips$i count=1 2>/dev/null
 			fi
 		done
+	else
+		echo "all good" > /dev/kmsg
+		mv file1 file
 	fi
-
-    echo "replacing hashes and storing in flash" > /dev/kmsg
-	# replace hashes
-	echo $(eval dd if="/dev/mmcblk0p1" skip=\$skips$i count=\$counts$i | eval head -c \$sizes$i | md5sum | head -c 32) > md5.txt
-	for j in 1 2 3; do
-		echo $(eval dd if=md5.txt of="/dev/mmcblk0p\$j" seek=\$hash_skips$i count=1 | head -c 32)
-	done
 
 
 	if [ $i = 1 ]; then
 		# fill in sizes after info is done
-		sizes2=$(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE | head -c INFO_BYTES | tail -c INFO_BYTES)
+		sizes2=$(cat file | head -c INFO_BYTES | tail -c INFO_BYTES)
 		echo "sizes2 is $sizes2" > /dev/kmsg
-		sizes3=$(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE | head -c $(echo INFO_BYTES \* 2 | bc) | tail -c INFO_BYTES)
+		sizes3=$(cat file | head -c $(echo INFO_BYTES \* 2 | bc) | tail -c INFO_BYTES)
 		echo "sizes3 is $sizes3" > /dev/kmsg
-		sizes4=$(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE | head -c $(echo INFO_BYTES \* 3 | bc) | tail -c INFO_BYTES)
+		sizes4=$(cat file | head -c $(echo INFO_BYTES \* 3 | bc) | tail -c INFO_BYTES)
 		echo "sizes4 is $sizes4" > /dev/kmsg
-		sizes5=$(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE | head -c $(echo INFO_BYTES \* 4 | bc) | tail -c INFO_BYTES)
+		sizes5=$(cat file | head -c $(echo INFO_BYTES \* 4 | bc) | tail -c INFO_BYTES)
 		echo "sizes5 is $sizes5" > /dev/kmsg
-		echo $(dd if=/dev/mmcblk0p1 skip=0 count=INFO_FILE_BLOCKS bs=BLOCK_SIZE) > /dev/kmsg
+		echo $(cat file) > /dev/kmsg
 	fi
 done
 
