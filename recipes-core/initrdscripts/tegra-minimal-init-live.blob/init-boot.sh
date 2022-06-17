@@ -73,7 +73,7 @@ if [ -n "$wait" -a ! -b "${rootdev}" ]; then
     done
 fi
 
-echo "Press any key to stop autoboot" > /dev/kmsg
+echo "PRESS ANY KEY WITHIN 3 SECONDS TO STOP AUTOBOOT" > /dev/kmsg
 read -n 1 -s -r -t 3
 stop=$?
 if [ ${stop} -eq 0 ]; then
@@ -104,22 +104,39 @@ counts3=DTB_FILE_BLOCKS
 counts4=INITRD_FILE_BLOCKS
 counts5=ROOTFS_FILE_BLOCKS
 
+function checksum() {
+	i=$1
+	j=$2
+	calculated=$(eval dd if="/dev/mmcblk0p\${j}" iflag=skip_bytes skip=\$\(\(\$skips$i*512\)\) count=1 bs=\$sizes$i | md5sum | head -c 32)
+	existing=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$hash_skips$i count=1 | head -c 32)
+	if [ $calculated = $existing ]; then
+		eval echo "1" > good$j
+		echo "file $i version $j matches hash" > /dev/kmsg
+	else
+		eval echo "0" > good$j
+		echo "file $i version $j does not match hash" > /dev/kmsg
+	fi
+} 
+
 for i in 1 2 3 4 5; do
-	good1=0
-    good2=0
-    good3=0
+	good1="-"
+    good2="-"
+    good3="-"
 
     echo "Checking file $i" > /dev/kmsg
 
 	for j in 1 2 3; do
-		calculated=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$skips$i count=\$counts$i | eval head -c \$sizes$i | md5sum | head -c 32)
-		existing=$(eval dd if="/dev/mmcblk0p\${j}" skip=\$hash_skips$i count=1 | head -c 32)
-		if [ $calculated = $existing ]; then
-			eval good$j=1
-            echo "file $i version $j matches hash" > /dev/kmsg
-		else
-            echo "file $i version $j does not match hash" > /dev/kmsg
-        fi
+		eval echo "-" > good$j
+		checksum $i $j &
+	done
+
+	for j in 1 2 3; do
+		good="-"
+		while [ $good = "-" ]; do
+			sleep 0.1
+			good=`cat good$j`
+		done
+		eval good$j=$good
 	done
 
 	if [ "$good1 $good2 $good3" = "0 0 0" ]; then
