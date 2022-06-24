@@ -7,6 +7,8 @@ SRC_URI = "\
     file://platform-preboot.sh \
     ${@'file://platform-preboot-cboot.sh' if d.getVar('PREFERRED_PROVIDER_virtual/bootloader').startswith('cboot') else ''}"
 
+DEPENDS += "bc-native"
+
 COMPATIBLE_MACHINE = "(tegra)"
 
 S = "${WORKDIR}"
@@ -50,6 +52,7 @@ replace_vars() {
         -e "s/INFO_BYTES/${INFO_BYTES}/g" \
         -e "s/BLOCK_SIZE/${BLOCK_SIZE}/g" \
         -e "s/MAX_FILE_BLOCKS/${MAX_FILE_BLOCKS}/g" \
+        -e "s/ROOTFSPART_SIZE/${ROOTFSPART_SIZE}/g" \
         -i ${WORKDIR}/init-boot.sh
 }
 

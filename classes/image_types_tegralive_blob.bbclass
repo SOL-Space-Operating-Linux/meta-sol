@@ -1,6 +1,6 @@
 inherit image_types pythonnative perlnative
 
-
+DEPENDS += "bc-native"
 
 IMAGE_TYPES += "blob"
 LIVE_IMAGE_COMPRESSION ?= "none"
@@ -70,8 +70,17 @@ oe_mkblobfs () {
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/live_rootfs.tar seek=${ROOTFS_FILE_OFFSET} count=${ROOTFS_FILE_BLOCKS} obs=${BLOCK_SIZE}
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=${IMAGE_ROOTFS_TMP}/hash/live_rootfs.tar seek=${ROOTFS_HASH_OFFSET} count=1 obs=${BLOCK_SIZE}
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=/dev/zero seek="`echo ${ROOTFS_HASH_OFFSET} + 3 | bc`" obs=${BLOCK_SIZE} count=0
+
+  # Create an empty ext4 image of 10MB size for the config/data partitions (this will grow to the size of the partitions set in flash_t186_tmr.xml)
+  dd if=/dev/zero of=${IMGDEPLOYDIR}/dummy.ext4.img bs=1M count=10
+  mkfs.ext4 ${IMGDEPLOYDIR}/dummy.ext4.img
+
 }
 
 IMAGE_CMD_blob = "oe_mkblobfs"
 
 do_image_blob[depends] += "e2fsprogs-native:do_populate_sysroot"
+
+tegraflash_custom_pre() {
+  cp ${IMGDEPLOYDIR}/dummy.ext4.img .
+}

@@ -1,6 +1,9 @@
 DESCRIPTION = "Minimal initramfs image for Tegra platforms"
 LICENSE = "MIT"
 
+# Prevent the annoying "Manifest" error for x86_64_x86_64_native-nativesdk...
+deltask do_packagedata
+
 TEGRA_INITRD_INSTALL ??= ""
 INITRD_FSTYPES ??= "${INITRAMFS_FSTYPES}"
 
@@ -10,7 +13,7 @@ PACKAGE_INSTALL = "\
     tegra-firmware-xusb \
     tegra-minimal-init-live.blob \
     xz tar boot-tmr \
-    e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs e2fsprogs-badblocks \
+    e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs e2fsprogs-badblocks e2fsprogs-resize2fs \
     ${TEGRA_INITRD_BASEUTILS} \
     ${ROOTFS_BOOTSTRAP_INSTALL} \
     ${TEGRA_INITRD_INSTALL} \
