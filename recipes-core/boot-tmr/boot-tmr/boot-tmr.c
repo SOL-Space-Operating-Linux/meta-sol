@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   int fd1 = open(argv[2], O_RDONLY);
   int fd2 = open(argv[3], O_RDONLY);
   int fd3 = open(argv[4], O_RDONLY);
-  int fdout = open(argv[5], O_WRONLY | O_CREAT);
+  int fdout = open(argv[5], O_WRONLY | O_CREAT | O_TRUNC);
 
   // Read the files in 
   if (read(fd1, b1, size) != size){
