@@ -273,7 +273,7 @@ function mount_and_launch() {
 ################################################################################
 function extract_and_boot() {
   echo "Starting ramdisk extraction" > /dev/kmsg
-  tar -xf $1 -C /mnt/ramdisk
+  tar -xmf $1 -C /mnt/ramdisk
   tar_rc=$?
   if [ ${tar_rc} -ne 0 ]; then
     echo "Decompression failed of file ${1} with code (${tar_rc})" > /dev/kmsg
