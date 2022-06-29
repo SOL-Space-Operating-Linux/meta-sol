@@ -190,7 +190,7 @@ main(){
   # Check and configure data partition. Resize image to full partition size if
   # we have just flashed
   echo "Attempting to mount data partition..." > /dev/kmsg
-  e2fsck -f ext4 /dev/mmCheck and configurecblk0p5
+  e2fsck -f ext4 /dev/mmcblk0p5
   retval=$? 
   if [ $retval = 0 ]; then
     echo "ext4 file system exists and is fine for data partition" > /dev/kmsg
