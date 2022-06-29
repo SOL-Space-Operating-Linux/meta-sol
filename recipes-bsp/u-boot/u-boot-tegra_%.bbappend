@@ -3,6 +3,9 @@ SRCBRANCH = "tmr-development"
 SRC_URI = "git://${UBOOT_TEGRA_REPO};protocol=https;branch=${SRCBRANCH}"
 SRCREV = "e06b05eb2a4207f4fdecfd8041a9419141c21ebe"
 
+# We need this in order to make the calculations in " | bc" work
+DEPENDS += "bc-native"
+
 def get_layer_rev(d):
     layers = (d.getVar("BBLAYERS") or "").split()
     for layer in layers:

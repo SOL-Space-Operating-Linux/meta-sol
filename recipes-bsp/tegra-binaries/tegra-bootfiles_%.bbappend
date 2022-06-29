@@ -43,7 +43,7 @@ do_compile_prepend() {
 }
 
 
-do_install_append() {
+do_install_prepend() {
     #Flash layouts
     install -m 0644 ${WORKDIR}/flash_t186_redundant_rootfs.xml "${S}/bootloader/${NVIDIA_BOARD}/cfg/flash_t186_redundant_rootfs.xml"
     install -m 0644 ${WORKDIR}/flash_t186_default_rootfs.xml "${S}/bootloader/${NVIDIA_BOARD}/cfg/flash_t186_default_rootfs.xml"

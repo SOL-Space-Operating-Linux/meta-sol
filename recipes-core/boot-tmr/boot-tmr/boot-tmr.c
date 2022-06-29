@@ -4,24 +4,53 @@
 #include <string.h>
 
 int main(int argc, char **argv) {
-    int fd1 = open(argv[3], O_RDONLY);
-    int fd2 = open(argv[4], O_RDONLY);
-    int fd3 = open(argv[5], O_RDONLY);
-    int fdout = open(argv[6], O_WRONLY);
 
-    lseek(fd1, atoi(argv[2])*512, SEEK_SET);
-    lseek(fd2, atoi(argv[2])*512, SEEK_SET);
-    lseek(fd3, atoi(argv[2])*512, SEEK_SET);
+  // Get the file size and offset
+  int size   = atoi(argv[1]);
+  printf("Performing TMR. Size = %d\n", size);
 
-    unsigned char b1[1], b2[1], b3[1];
-    unsigned char b[1];
-    
-    for(int count = 0; count < atoi(argv[1]); count++) {
-        if(read(fd1, b1, 1) != 1) exit(1);
-        if(read(fd2, b2, 1) != 1) exit(1);
-        if(read(fd3, b3, 1) != 1) exit(1);
+  // Allocate memory for each of the three files. Use b1 for the final 
+  // result to save space
+  char* b1 = malloc(sizeof(char) * size);
+  char* b2 = malloc(sizeof(char) * size);
+  char* b3 = malloc(sizeof(char) * size);
 
-        b[0] = (b1[0] & b2[0]) | (b2[0] & b3[0]) | (b3[0] & b1[0]);
-		write(fdout, b, 1);
-	}
+  // Open the files
+  int fd1 = open(argv[2], O_RDONLY);
+  int fd2 = open(argv[3], O_RDONLY);
+  int fd3 = open(argv[4], O_RDONLY);
+  int fdout = open(argv[5], O_WRONLY | O_CREAT | O_TRUNC);
+
+  // Read the files in 
+  if (read(fd1, b1, size) != size){
+    printf("Could not read in file1!\n");  
+    goto done;
+  }
+  if (read(fd2, b2, size) != size){
+    printf("Could not read in file2!\n");
+    goto done;
+  }
+  if (read(fd3, b3, size) != size){ 
+    printf("Could not read in file3!\n");
+    goto done;
+  }
+
+  // Loop over all bytes, using b1 as the voted-on version
+  for(int i = 0; i < size; i++)
+    b1[i] = (b1[i] & b2[i]) | (b2[i] & b3[i]) | (b3[i] & b1[i]);
+
+  // Write the resulting file
+  write(fdout, b1, size);
+
+  // Close the files
+  done:
+  close(fd1);
+  close(fd2);
+  close(fd3);
+  close(fdout);
+
+  // Free the memory
+  free(b1);
+  free(b2);
+  free(b3);
 }

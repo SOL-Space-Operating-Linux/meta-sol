@@ -263,7 +263,8 @@
             <file_system_attribute> 0 </file_system_attribute>
             <allocation_attribute> 0x8 </allocation_attribute>
             <percent_reserved> 0 </percent_reserved>
-            <description> **Required.** Contains configuration info for SFM between boots. </description>
+            <filename> dummy.ext4.img </filename>
+            <description> Nonvolatile partition to be mounted at /config from /dev/mmcblk0p4.</description>
         </partition>
         <partition name="DATA" type="data">
             <allocation_policy> sequential </allocation_policy>
@@ -272,7 +273,8 @@
             <file_system_attribute> 0 </file_system_attribute>
             <allocation_attribute> 0x8 </allocation_attribute>
             <percent_reserved> 0 </percent_reserved>
-            <description> **Required.** Contains outputs and intermediate data for SFM. </description>
+            <filename> dummy.ext4.img </filename>
+            <description> Nonvolatile partition to be mounted at /data from /dev/mmcblk0p5.</description>
         </partition>
         <partition name="MBPNAME" type="MBPTYPE" oem_sign="true">
             <allocation_policy> sequential </allocation_policy>
