@@ -1,4 +1,4 @@
-inherit image_types pythonnative perlnative
+inherit image_types_tegra image_types pythonnative perlnative
 
 DEPENDS += "bc-native"
 
