@@ -49,6 +49,26 @@ main(){
       count=`expr $count + 1`
     done
   fi
+
+  # Allow 10 seconds to make sure that the partitions have been mounted
+  count=0
+  success=0
+  echo "Checking to make sure mmcblk0p1, p2, and p3 are mounted" > /dev/kmsg
+  while [ $count -lt 100 ]; do
+    if [[ -e /dev/mmcblk0p1 && -e /dev/mmcblk0p2 && -e /dev/mmcblk0p3 ]]; then
+      echo "mmcblk0p1, p2, and p3 are mounted! Starting TMR..." > /dev/kmsg
+      success=1
+      break
+    fi
+    sleep 0.1
+    count=`expr $count + 1`
+  done
+  # Reboot immediately if they were not mounted so we do not accidentally
+  # try to correct the blobs with garbage
+  if [ $success = 0 ]; then
+    echo "mmcblk0p1, p2, and p3 were not mounted! Rebooting..." > /dev/kmsg
+    reboot -f
+  fi
   
   # Set up the variables needed to do the TMR checks and corrections 
   num_partitions="3"
