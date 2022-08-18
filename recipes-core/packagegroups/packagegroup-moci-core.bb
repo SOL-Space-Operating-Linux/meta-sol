@@ -4,7 +4,6 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 inherit packagegroup
 
 RDEPENDS_${PN} = " \
-    ffmpeg \
     tegra-sfm \
     yolo \
     yolo-gpu \
