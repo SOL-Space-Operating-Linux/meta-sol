@@ -10,5 +10,4 @@ RDEPENDS_${PN} = " \
     cudnn \
     yolo-gpu-cudnn \
     api \
-    cuda-toolkit \
 "
