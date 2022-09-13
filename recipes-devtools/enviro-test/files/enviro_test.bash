@@ -5,7 +5,7 @@ trap ctrl_c INT
 arg=$1
 
 function ctrl_c() {
-    set_db_flag.sh "$1=0"
+    set_db_flag.sh "$arg=0"
     exit
 }
 
