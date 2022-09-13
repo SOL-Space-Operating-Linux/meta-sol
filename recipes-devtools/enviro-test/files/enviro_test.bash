@@ -34,7 +34,7 @@ fi
 
 if [ $1 = "mem" ] ; then
     echo 'Mem Test'
-    set_db_flag.sh 'memtester=1'
+    set_db_flag.sh 'mem=1'
     memtester 5G 1 | ts %s
 fi
 
