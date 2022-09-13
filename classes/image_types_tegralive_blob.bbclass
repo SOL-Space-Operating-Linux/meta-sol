@@ -72,8 +72,8 @@ oe_mkblobfs () {
 	dd of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.blob if=/dev/zero seek="`echo ${ROOTFS_HASH_OFFSET} + 3 | bc`" obs=${BLOCK_SIZE} count=0
 
   # Create an empty ext4 image of 10MB size for the config/data partitions (this will grow to the size of the partitions set in flash_t186_tmr.xml)
-  dd if=/dev/zero of=${IMGDEPLOYDIR}/dummy.ext4.img bs=1M count=10
-  mkfs.ext4 ${IMGDEPLOYDIR}/dummy.ext4.img
+  dd if=/dev/zero of=${IMGDEPLOYDIR}/${IMAGE_NAME}.dummy.ext4.img bs=1M count=10
+  mkfs.ext4 ${IMGDEPLOYDIR}/${IMAGE_NAME}.dummy.ext4.img
 
 }
 
@@ -82,5 +82,5 @@ IMAGE_CMD_blob = "oe_mkblobfs"
 do_image_blob[depends] += "e2fsprogs-native:do_populate_sysroot"
 
 tegraflash_custom_pre() {
-  cp ${IMGDEPLOYDIR}/dummy.ext4.img .
+  cp ${IMGDEPLOYDIR}/${IMAGE_NAME}.dummy.ext4.img ./dummy.ext4.img
 }
