@@ -18,5 +18,3 @@ require core-image-sol-redundant-live.bb
 
 # Packages to install
 IMAGE_INSTALL += "packagegroup-moci-core"
-
-KERNEL_ARGS_remove = "console=tty0"

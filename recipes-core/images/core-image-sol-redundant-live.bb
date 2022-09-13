@@ -25,6 +25,8 @@ IMAGE_INSTALL += "packagegroup-core-buildessential \
     packagegroup-devtools \
 "
 
+KERNEL_ARGS_remove = "console=tty0"
+
 # Set root password (password = "tegratest")
 inherit extrausers
 IMAGE_FEATURES_remove = "allow-empty-password empty-root-password"
