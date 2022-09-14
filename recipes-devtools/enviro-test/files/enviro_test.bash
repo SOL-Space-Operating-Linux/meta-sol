@@ -29,7 +29,7 @@ fi
 if [ $1 = "stress-ng" ] ; then
     echo 'Stress Test'
     set_db_flag.sh "stress-ng=1"
-    stress-ng --cpu 8 --io 4 --vm 2 --vm-bytes 1G --fork 4 --timeout 86400s | ts %s
+    stress-ng --cpu 8 --vm 2 --vm-bytes 1G --fork 4 --timeout 86400s | ts %s
 fi
 
 if [ $1 = "mem" ] ; then
