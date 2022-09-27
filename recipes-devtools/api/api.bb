@@ -4,7 +4,7 @@ LICENSE = "CLOSED"
 
 S = "${WORKDIR}/git"
 
-SRC_URI = "git://gitlab.smallsat.uga.edu/flight-software/moci-software/tx2-controller.git;protocol=https;branch=master"
+SRC_URI = "git://128.192.19.18/flight-software/moci-software/tx2-controller.git;protocol=ssh;user=git;branch=master"
 SRCREV = "d3a269c2ae2a6735e6acfe044f011026c000f6d4"
 
 do_install() {
@@ -19,6 +19,5 @@ RDEPENDS_${PN} += " \
     python3 \
     python3-pyserial \
     python3-crcmod \
-    python3-opencv \
     ffmpeg \
 "
