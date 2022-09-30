@@ -1,4 +1,4 @@
-UBOOT_TEGRA_REPO = "github.com/uga-ssrl/u-boot-tegra-tmr.git"
+UBOOT_TEGRA_REPO = "githu/SOL-Space-Operating-Linux/u-boot-tegra-tmr.git"
 SRCBRANCH = "tmr-development"
 SRC_URI = "git://${UBOOT_TEGRA_REPO};protocol=https;branch=${SRCBRANCH}"
 SRCREV = "e06b05eb2a4207f4fdecfd8041a9419141c21ebe"
