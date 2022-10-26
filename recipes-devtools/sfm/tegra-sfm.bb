@@ -2,8 +2,8 @@ DESCRIPTION = "Tegra-SFM"
 HOMEPAGE = "https://gitlab.smallsat.uga.edu/payload_software/Tegra-SFM"
 LICENSE = "CLOSED"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}:"
-SRC_URI = "file://tegra-sfm.tar.gz"
+SRC_URI = "git://128.192.19.18/payload_software/SSRLCV.git;protocol=ssh;user=git;branch=master"
+SRCREV = "00c9e7b97c658046ba57d5ee7604903bb710899b"
 
 FILES_${PN} += "${libdir}/*.so.*"
 
@@ -11,7 +11,7 @@ COMPATIBLE_MACHINE = "(tegra)"
 
 INHIBIT_PACKAGE_STRIP = "1"
 
-S = "${WORKDIR}/SSRLCV"
+S = "${WORKDIR}/git"
 
 TARGET_CC_ARCH += "${LDFLAGS}"
 INSANE_SKIP_${PN} += "dev-deps"
@@ -23,11 +23,6 @@ INHIBIT_SYSROOT_STRIP = "1"
 SOLIBS = ".so .so.8"
 FILES_SOLIBSDEV = ""
 
-
-do_unpack() {
-    tar -C ${S} -x -f ${THISDIR}/tegra-sfm/tegra-sfm.tar.gz
-}
-
 RDEPENDS_${PN} = " \
     cuda-cusolver \
     cuda-cublas \
@@ -37,7 +32,7 @@ RDEPENDS_${PN} = " \
 
 export NVCC
 NVCC = "/usr/local/cuda-10.0/bin/nvcc -ccbin /usr/bin/aarch64-linux-gnu-g++"
-CXX = "/usr/bin/aarch64-linux-gnu-gcc"
+CXX = "/usr/bin/aarch64-linux-gnu-g++"
 INCLUDES = "-I. -I./include -I/usr/local/cuda/include -I/usr/local/libpng/include/libpng15"
 
 EXTRA_OEMAKE = "'NVCC=${NVCC}' 'LINK=${NVCC}' 'CXX=${CXX}' 'INCLUDES=${INCLUDES}'" 
