@@ -130,6 +130,7 @@ main(){
       echo "Making sure!" > /dev/kmsg
       eval size=\$sizes$i
       eval skip=\$skips$i
+      echo "Running: boot-tmr $size /tmr/file1 /tmr/file2 /tmr/file3 /tmr/file"
       boot-tmr $size /tmr/file1 /tmr/file2 /tmr/file3 /tmr/file
 
       # Replace BLOBs and hashes in flash
@@ -229,8 +230,7 @@ main(){
     boot_device="/dev/mmcblk0p${boot_partition}"
     echo "Attempting to boot from ${boot_device}" > /dev/kmsg
     mount_and_launch "${boot_device}"
-    echo "Boot from ${boot_device} failed" > /dev/kmsg
-    boot_partition=$((${boot_partition} + 1 % ${num_partitions}))
+    sleep infinity # it's dead at this point, don't want to boot loop and clog logs
   done
 }
 
