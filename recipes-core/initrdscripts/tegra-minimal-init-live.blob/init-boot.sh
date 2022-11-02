@@ -194,7 +194,7 @@ main(){
   # Check and configure config partition. Resize image to full partition size if 
   # we have just flashed
   echo "Attempting to mount config partition..." > /dev/kmsg
-  e2fsck -f /dev/mmcblk0p4
+  e2fsck -y -f /dev/mmcblk0p4
   retval=$?
   if [ $retval = 0 ]; then
     echo "ext4 file system exists and is fine for config partition" > /dev/kmsg
@@ -211,7 +211,7 @@ main(){
   # Check and configure data partition. Resize image to full partition size if
   # we have just flashed
   echo "Attempting to mount data partition..." > /dev/kmsg
-  e2fsck -f /dev/mmcblk0p5
+  e2fsck -y -f /dev/mmcblk0p5
   retval=$? 
   if [ $retval = 0 ]; then
     echo "ext4 file system exists and is fine for data partition" > /dev/kmsg
