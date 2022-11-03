@@ -138,7 +138,7 @@ main(){
       for c in 1 2 3; do
         echo "Replacing bad copy: $c" > /dev/kmsg
         eval dd if=/tmr/file of="/dev/mmcblk0p\${c}" seek=\$skips$i \
-          count=\$counts$i 2>/dev/null
+          count=\$counts$i bs=10000 2>/dev/null
         eval dd if=/tmr/hash of="/dev/mmcblk0p\${c}" seek=\$hash_skips$i \
           count=1 2>/dev/null
       done
@@ -160,7 +160,7 @@ main(){
         if [ $(eval echo \$good$c) = 0 ]; then
           echo "replacing bad copy: $c" > /dev/kmsg
           eval dd if=/tmr/file of="/dev/mmcblk0p\${c}" seek=\$skips$i \
-            count=\$counts$i 2>/dev/null
+            count=\$counts$i bs=10000 2>/dev/null
           eval dd if=/tmr/hash of="/dev/mmcblk0p\${c}" seek=\$hash_skips$i \
             count=1 2>/dev/null
         fi
