@@ -1,0 +1,27 @@
+#!/bin/bash
+
+tar -cmf ~/live_rootfs.tar --numeric-owner --exclude '/sys/*' --exclude '/proc/*' --exclude '/dev/*' --exclude '/run/*' --exclude /data --exclude /config -C / /
+md5sum ~/live_rootfs.tar > ~/live_rootfs.hash
+
+size=$(wc -c ~/live_rootfs.tar | awk '{print $1}')
+printf "%0INFO_BYTESu" $size > ~/info
+md5sum ~/info > ~/info.hash # this is wrong because it's not the full file, but whatever, it replaces itself on reboot
+
+dd of=/dev/mmcblk0p1 if=~/info seek=45 bs=1 count=15
+dd of=/dev/mmcblk0p1 if=~/info.hash seek=INFO_HASH_OFFSET count=1 bs=BLOCK_SIZE
+dd of=/dev/mmcblk0p1 if=~/live_rootfs.tar seek=ROOTFS_FILE_OFFSET count=ROOTFS_FILE_BLOCKS bs=BLOCK_SIZE
+dd of=/dev/mmcblk0p1 if=~/live_rootfs.hash seek=ROOTFS_HASH_OFFSET count=1 bs=BLOCK_SIZE
+
+dd of=/dev/mmcblk0p2 if=~/info seek=45 bs=1 count=15
+dd of=/dev/mmcblk0p2 if=~/info.hash seek=INFO_HASH_OFFSET count=1 bs=BLOCK_SIZE
+dd of=/dev/mmcblk0p2 if=~/live_rootfs.tar seek=ROOTFS_FILE_OFFSET count=ROOTFS_FILE_BLOCKS bs=BLOCK_SIZE
+dd of=/dev/mmcblk0p2 if=~/live_rootfs.hash seek=ROOTFS_HASH_OFFSET count=1 bs=BLOCK_SIZE
+
+dd of=/dev/mmcblk0p3 if=~/info seek=45 bs=1 count=15
+dd of=/dev/mmcblk0p3 if=~/info.hash seek=INFO_HASH_OFFSET count=1 bs=BLOCK_SIZE
+dd of=/dev/mmcblk0p3 if=~/live_rootfs.tar seek=ROOTFS_FILE_OFFSET count=ROOTFS_FILE_BLOCKS bs=BLOCK_SIZE
+dd of=/dev/mmcblk0p3 if=~/live_rootfs.hash seek=ROOTFS_HASH_OFFSET count=1 bs=BLOCK_SIZE
+
+rm ~/live_rootfs.*
+rm ~/info
+rm ~/info.hash
