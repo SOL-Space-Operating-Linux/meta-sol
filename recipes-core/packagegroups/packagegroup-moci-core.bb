@@ -5,9 +5,16 @@ inherit packagegroup
 
 RDEPENDS_${PN} = " \
     tegra-sfm \
-    yolo \
     yolo-gpu \
-    cudnn \
-    yolo-gpu-cudnn \
     api \
+    moci-startup \
+    tar \
+    update-rootfs \
+    tegra-pwrmon \
+    telegraf \
+    tegrastats-influx \
+    lmsensors-libsensors \
+    lmsensors-sensord \
+    lmsensors-sensors \
+    lmsensors-sensorsconfconvert \
 "
