@@ -1,50 +1,44 @@
 diff --git a/Makefile b/Makefile
-index 63e15e6..cc8dd69 100644
+index e6a4ad7..5f694d3 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -25,9 +25,9 @@ NVCC=nvcc
- AR=ar
- ARFLAGS=rcs
+@@ -47,7 +47,7 @@ OS := $(shell uname)
+ # ARCH= -gencode arch=compute_53,code=[sm_53,compute_53]
+ 
+ # For Jetson Tx2 or Drive-PX2 uncomment:
+-# ARCH= -gencode arch=compute_62,code=[sm_62,compute_62]
++ARCH= -gencode arch=compute_62,code=[sm_62,compute_62]
+ 
+ 
+ VPATH=./src/
+@@ -68,7 +68,7 @@ endif
+ CPP=g++ -std=c++11
+ NVCC=nvcc
  OPTS=-Ofast
--LDFLAGS= -lm -pthread 
-+override LDFLAGS += -lm -pthread 
- COMMON= -Iinclude/ -Isrc/
--CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
-+CFLAGS= -Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
+-LDFLAGS= -lm -pthread
++LDFLAGS=
+ COMMON= -Iinclude/ -I3rdparty/stb/include
+ CFLAGS=-Wall -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -fPIC
  
- ifeq ($(OPENMP), 1) 
- CFLAGS+= -fopenmp
-@@ -49,13 +49,13 @@ endif
- ifeq ($(GPU), 1) 
- COMMON+= -DGPU -I/usr/local/cuda/include/
- CFLAGS+= -DGPU
--LDFLAGS+= -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -lcurand
-+override LDFLAGS+= -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -lcurand
+@@ -165,7 +165,7 @@ $(APPNAMESO): $(LIBNAMESO) include/yolo_v2_class.hpp src/yolo_console_dll.cpp
  endif
  
- ifeq ($(CUDNN), 1) 
- COMMON+= -DCUDNN 
- CFLAGS+= -DCUDNN
--LDFLAGS+= -lcudnn
-+override LDFLAGS+= -lcudnn
- endif
+ $(EXEC): $(OBJS)
+-	$(CPP) -std=c++11 $(COMMON) $(CFLAGS) $^ -o $@ $(LDFLAGS)
++	$(NVCC) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS)"  $^ -o $@ $(LDFLAGS)
  
- OBJ=gemm.o utils.o cuda.o deconvolutional_layer.o convolutional_layer.o list.o image.o activations.o im2col.o col2im.o blas.o crop_layer.o dropout_layer.o maxpool_layer.o softmax_layer.o data.o matrix.o network.o connected_layer.o cost_layer.o parser.o option_list.o detection_layer.o route_layer.o upsample_layer.o box.o normalization_layer.o avgpool_layer.o layer.o local_layer.o shortcut_layer.o logistic_layer.o activation_layer.o rnn_layer.o gru_layer.o crnn_layer.o demo.o batchnorm_layer.o region_layer.o reorg_layer.o tree.o  lstm_layer.o l2norm_layer.o yolo_layer.o iseg_layer.o image_opencv.o
-@@ -67,6 +67,8 @@ endif
- 
- EXECOBJ = $(addprefix $(OBJDIR), $(EXECOBJA))
- OBJS = $(addprefix $(OBJDIR), $(OBJ))
-+CFLAGS_NVCC = $(addprefix -Xcompiler , $(CFLAGS))
-+LDFLAGS_NVCC = $(addprefix -Xlinker , $(subst -Wl,,$(LDFLAGS)))
- DEPS = $(wildcard src/*.h) Makefile include/darknet.h
- 
- all: obj backup results $(SLIB) $(ALIB) $(EXEC)
-@@ -74,7 +76,7 @@ all: obj backup results $(SLIB) $(ALIB) $(EXEC)
- 
- 
- $(EXEC): $(EXECOBJ) $(ALIB)
--	$(CC) $(COMMON) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(ALIB)
-+	$(NVCC) $(COMMON) $(CFLAGS_NVCC) $^ -o $@ $(LDFLAGS_NVCC) $(ALIB)
- 
- $(ALIB): $(OBJS)
- 	$(AR) $(ARFLAGS) $@ $^
+ $(OBJDIR)%.o: %.c $(DEPS)
+ 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
+diff --git a/src/image.c b/src/image.c
+index 07942c7..f388872 100644
+--- a/src/image.c
++++ b/src/image.c
+@@ -273,7 +273,7 @@ image **load_alphabet()
+         alphabets[j] = (image*)xcalloc(128, sizeof(image));
+         for(i = 32; i < 127; ++i){
+             char buff[256];
+-            sprintf(buff, "data/labels/%d_%d.png", i, j);
++            sprintf(buff, "/etc/yolo/labels/%d_%d.png", i, j);
+             alphabets[j][i] = load_image_color(buff, 0, 0);
+         }
+     }
