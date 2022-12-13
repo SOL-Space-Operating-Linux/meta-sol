@@ -6,6 +6,17 @@ SRC_URI = "git://128.192.19.18/payload_software/SSRLCV.git;protocol=ssh;user=git
 SRCREV = "00c9e7b97c658046ba57d5ee7604903bb710899b"
 
 FILES_${PN} += "${libdir}/*.so.*"
+FILES_${PN} += "/media"
+FILES_${PN} += "/media/sfm"
+FILES_${PN} += "/media/sfm/seed_blocks.png"
+FILES_${PN} += "/media/sfm/seed_spongebob.png"
+FILES_${PN} += "/media/sfm/seed_clouds.png"
+FILES_${PN} += "/media/sfm/seed_noise.png"
+FILES_${PN} += "/media/sfm/seed_random_triangle.png"
+FILES_${PN} += "/media/sfm/seed_cube_fractal.png"
+FILES_${PN} += "/media/sfm/seed_3D_mbrot.png"
+FILES_${PN} += "/media/sfm/seed_3Dshape_illusion.png"
+FILES_${PN} += "/media/sfm/seed_flower_fractal.png"
 
 COMPATIBLE_MACHINE = "(tegra)"
 
