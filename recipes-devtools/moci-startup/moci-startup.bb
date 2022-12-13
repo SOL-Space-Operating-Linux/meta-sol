@@ -2,7 +2,7 @@ DESCRIPTION = "MOCI Startup Scripts"
 HOMEPAGE = "https://gitlab.smallsat.uga.edu/"
 LICENSE = "CLOSED"
 
-FILES_${PN} += "file://init"
+SRC_URI += "file://init"
 
 
 do_install() {
