@@ -171,6 +171,10 @@ main(){
       echo "All three copies were good" > /dev/kmsg
       mv /tmr/file1 /tmr/file
     fi
+
+    rm -f /tmr/file1
+    rm -f /tmr/file2
+    rm -f /tmr/file3
  
     # If this is the first file, we pull the sizes of the remaining four files 
     # and print out information to the console
