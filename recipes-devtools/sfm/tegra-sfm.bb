@@ -53,5 +53,9 @@ do_install() {
 
     install -d ${D}${bindir}
     install -m 0755 ${S}/bin/SFM ${D}${bindir}
+
+    install -d ${D}/media
+    install -d ${D}/media/sfm
+    install -m 0644 ${THISDIR}/files/seeds/* ${D}/media/sfm/
 }
 
