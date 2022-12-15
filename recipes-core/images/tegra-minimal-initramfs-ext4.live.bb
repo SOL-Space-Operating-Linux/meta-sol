@@ -8,7 +8,7 @@ TEGRA_INITRD_BASEUTILS ?= "busybox"
 
 PACKAGE_INSTALL = "\
     tegra-firmware-xusb \
-    tegra-minimal-init-ext4.live \
+    tegra-minimal-init-live.ext4 \
     xz tar \
     ${TEGRA_INITRD_BASEUTILS} \
     ${ROOTFS_BOOTSTRAP_INSTALL} \

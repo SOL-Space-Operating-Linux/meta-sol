@@ -6,8 +6,13 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}/${MACHINE}:${THISDIR}/${PN}:"
 
 SRC_URI = "file://flash_t186_redundant_rootfs.xml \
            file://flash_t186_default_rootfs.xml \
+           file://flash_t186_blob_rootfs.xml \
            file://smd_info.redundant.cfg \
-           file://tegra186-mb1-bct-bootrom-quill-p3489-1000-a00-sol-custom.cfg \
+           "
+
+
+#APL Configs
+SRC_URI_append_jetson-tx2i-sol-apl = " file://tegra186-mb1-bct-bootrom-quill-p3489-1000-a00-sol-custom.cfg \
            file://tegra186-mb1-bct-misc-si-l4t-sol-custom.cfg \
            file://tegra186-mb1-bct-pad-quill-p3489-1000-a00-sol-custom.cfg \
            file://tegra186-mb1-bct-pinmux-quill-p3489-1000-a00-sol-custom.cfg \
@@ -38,16 +43,19 @@ do_compile_prepend() {
 }
 
 
-do_install_append() {
+do_install_prepend() {
     #Flash layouts
     install -m 0644 ${WORKDIR}/flash_t186_redundant_rootfs.xml "${S}/bootloader/${NVIDIA_BOARD}/cfg/flash_t186_redundant_rootfs.xml"
     install -m 0644 ${WORKDIR}/flash_t186_default_rootfs.xml "${S}/bootloader/${NVIDIA_BOARD}/cfg/flash_t186_default_rootfs.xml"
+    install -m 0644 ${WORKDIR}/flash_t186_blob_rootfs.xml "${S}/bootloader/${NVIDIA_BOARD}/cfg/flash_t186_blob_rootfs.xml"
 
+}
+
+do_install_append_jetson-tx2i-sol-apl() {
     #APL Configs
     install -m 0644 ${WORKDIR}/tegra186* ${D}${datadir}/tegraflash/
     install -m 0644 ${S}/bootloader/${NVIDIA_BOARD}/tegra186-a02-bpmp*dtb ${D}${datadir}/tegraflash/
     install -m 0644 ${S}/bootloader/${NVIDIA_BOARD}/BCT/minimal_scr.cfg ${D}${datadir}/tegraflash/
     install -m 0644 ${S}/bootloader/${NVIDIA_BOARD}/BCT/mobile_scr.cfg ${D}${datadir}/tegraflash/
     install -m 0644 ${S}/bootloader/${NVIDIA_BOARD}/BCT/emmc.cfg ${D}${datadir}/tegraflash/
-
 }

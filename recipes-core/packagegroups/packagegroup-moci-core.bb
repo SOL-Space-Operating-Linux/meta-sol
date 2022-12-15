@@ -4,8 +4,17 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 inherit packagegroup
 
 RDEPENDS_${PN} = " \
-    libpng \
-    tiff \
-    python3 \
     tegra-sfm \
+    yolo-gpu \
+    api \
+    moci-startup \
+    tar \
+    update-rootfs \
+    tegra-pwrmon \
+    telegraf \
+    tegrastats-influx \
+    lmsensors-libsensors \
+    lmsensors-sensord \
+    lmsensors-sensors \
+    lmsensors-sensorsconfconvert \
 "

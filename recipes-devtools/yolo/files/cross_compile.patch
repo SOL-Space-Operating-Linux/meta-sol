@@ -1,0 +1,44 @@
+diff --git a/Makefile b/Makefile
+index e6a4ad7..5f694d3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -47,7 +47,7 @@ OS := $(shell uname)
+ # ARCH= -gencode arch=compute_53,code=[sm_53,compute_53]
+ 
+ # For Jetson Tx2 or Drive-PX2 uncomment:
+-# ARCH= -gencode arch=compute_62,code=[sm_62,compute_62]
++ARCH= -gencode arch=compute_62,code=[sm_62,compute_62]
+ 
+ 
+ VPATH=./src/
+@@ -68,7 +68,7 @@ endif
+ CPP=g++ -std=c++11
+ NVCC=nvcc
+ OPTS=-Ofast
+-LDFLAGS= -lm -pthread
++LDFLAGS=
+ COMMON= -Iinclude/ -I3rdparty/stb/include
+ CFLAGS=-Wall -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -fPIC
+ 
+@@ -165,7 +165,7 @@ $(APPNAMESO): $(LIBNAMESO) include/yolo_v2_class.hpp src/yolo_console_dll.cpp
+ endif
+ 
+ $(EXEC): $(OBJS)
+-	$(CPP) -std=c++11 $(COMMON) $(CFLAGS) $^ -o $@ $(LDFLAGS)
++	$(NVCC) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS)"  $^ -o $@ $(LDFLAGS)
+ 
+ $(OBJDIR)%.o: %.c $(DEPS)
+ 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
+diff --git a/src/image.c b/src/image.c
+index 07942c7..f388872 100644
+--- a/src/image.c
++++ b/src/image.c
+@@ -273,7 +273,7 @@ image **load_alphabet()
+         alphabets[j] = (image*)xcalloc(128, sizeof(image));
+         for(i = 32; i < 127; ++i){
+             char buff[256];
+-            sprintf(buff, "data/labels/%d_%d.png", i, j);
++            sprintf(buff, "/etc/yolo/labels/%d_%d.png", i, j);
+             alphabets[j][i] = load_image_color(buff, 0, 0);
+         }
+     }

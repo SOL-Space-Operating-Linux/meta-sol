@@ -52,6 +52,30 @@ oe_mkext234fs () {
 	rm -rf ${IMAGE_ROOTFS_TMP}
 	mkdir -p ${IMAGE_ROOTFS_TMP}
 	cp -r ${IMAGE_ROOTFS}/boot ${IMAGE_ROOTFS_TMP}/boot
+	cp -r ${IMAGE_ROOTFS}/boot ${IMAGE_ROOTFS_TMP}/boot1
+	cp -r ${IMAGE_ROOTFS}/boot ${IMAGE_ROOTFS_TMP}/boot2
+	mkdir -p ${IMAGE_ROOTFS_TMP}/boothash/extlinux
+	for file in ${IMAGE_ROOTFS_TMP}/boot/* ${IMAGE_ROOTFS_TMP}/boot/*/*; do
+		if [ -f "${file}" ]; then
+			md5sum $file > ${IMAGE_ROOTFS_TMP}/boothash/${file#"${IMAGE_ROOTFS_TMP}/boot/"} #parallel directory structure
+		fi
+	done
+
+	touch ${IMAGE_ROOTFS_TMP}/info
+	for file in Image u-boot-dtb.bin initrd; do
+		name=$(basename $(realpath ${IMAGE_ROOTFS_TMP}/boot/${file}))
+		size=$(wc -c ${IMAGE_ROOTFS_TMP}/boot/${name} | awk '{print $1}')
+		for item in $name $size; do
+			printf $item >> ${IMAGE_ROOTFS_TMP}/info
+			len=${#item}
+			while [ $len -lt 100 ]; do
+				#Pad with null characters so every entity is 20 bytes
+				printf '\0' >> ${IMAGE_ROOTFS_TMP}/info 
+				len=`expr $len + 1`
+			done
+		done
+	done
+
     cp ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.live.tar ${IMAGE_ROOTFS_TMP}/live_rootfs.tar
 
 	#Choose your hash algorithm here
@@ -60,7 +84,7 @@ oe_mkext234fs () {
 	cd -
 
     bbdebug 1 Executing "mkfs.$fstype -F $extra_imagecmd ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live -d ${IMAGE_ROOTFS_TMP}"
-	mkfs.$fstype -F $extra_imagecmd ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live -d ${IMAGE_ROOTFS_TMP}
+	mkfs.$fstype -F -O ^metadata_csum $extra_imagecmd ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live -d ${IMAGE_ROOTFS_TMP}
 	# Error codes 0-3 indicate successfull operation of fsck (no errors or errors corrected)
 	fsck.$fstype -pvfD ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$fstype.live || [ $? -le 3 ]
 }

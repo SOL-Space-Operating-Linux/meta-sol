@@ -1,0 +1,12 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:             moci-startup
+# Required-Start:       $syslog $time $local-fs
+# Required-Stop:
+# Default-Start:        S
+# Default-Stop:
+### END INIT INFO
+
+echo "Starting up MOCI scripts:" > /dev/kmsg
+python3 /usr/bin/api/controller.py &
+telegraf &
