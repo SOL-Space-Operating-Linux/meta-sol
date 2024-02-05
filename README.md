@@ -14,6 +14,7 @@
   - [Building the Image with BitBake](#building-the-image-with-bitbake)
   - [Flashing the TX2/TX2i](#flashing-the-tx2tx2i)
   - [Useful Commands](#useful-commands)
+  - [Custom Feature Selection](#custom-feature-selection)
   - [List of Useful References](#list-of-useful-references)
 
 ## Setting up Environment for Local Development
@@ -255,6 +256,16 @@ cd /usr/bin/cuda-samples
   ```
   bitbake-layers show-layers
   ```
+
+## Custom Feature Selection
+
+This section is intended for those who wish to use (or build upon) meta-sol for their own image.
+
+It is recommended to start with an image bitbake file (examples are in `recipes-core/images`) and to `require` base images (such as `core-image-sol` and `core-image-sol-redundant-live`) as desired.
+
+Along with the image file, a package group (examples in `recipes-core/packagegroups`) can be created to specify the specific features/recipes to include.
+
+Finally, if necessary, a new machine configuration can be created (examples in `conf/machine/`) to enable-disable specific features, such as the `initramfs` image and partition layout template. Recommended starting points are `jetson-tx2-sol-redundant-live.conf`/`jetson-tx2i-sol-redundant-live.conf`, and they have a few different options commented out.
 
 ## List of Useful References
 - https://github.com/madisongh/meta-tegra/tree/zeus-l4t-r32.3.1
