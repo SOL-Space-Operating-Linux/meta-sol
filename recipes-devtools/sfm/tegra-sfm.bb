@@ -2,8 +2,13 @@ DESCRIPTION = "Tegra-SFM"
 HOMEPAGE = "https://gitlab.smallsat.uga.edu/payload_software/Tegra-SFM"
 LICENSE = "CLOSED"
 
-SRC_URI = "git://128.192.19.18/payload_software/SSRLCV.git;protocol=ssh;user=git;branch=master"
-SRCREV = "00c9e7b97c658046ba57d5ee7604903bb710899b"
+#SRC_URI = "file:///home/ssrl/SSRLCV"
+
+#SRC_URI = "git://128.192.19.18/payload_software/SSRLCV.git;protocol=ssh;user=git;branch=master"
+#SRCREV = "00c9e7b97c658046ba57d5ee7604903bb710899b"
+
+SRC_URI = "git://github.com/uga-ssrl/SSRLCV.git;protocol=ssh;user=git;branch=master"
+SRCREV = "${AUTOREV}"
 
 FILES_${PN} += "${libdir}/*.so.*"
 FILES_${PN} += "/media"
@@ -23,6 +28,8 @@ COMPATIBLE_MACHINE = "(tegra)"
 INHIBIT_PACKAGE_STRIP = "1"
 
 S = "${WORKDIR}/git"
+
+#S = "${WORKDIR}"
 
 TARGET_CC_ARCH += "${LDFLAGS}"
 INSANE_SKIP_${PN} += "dev-deps"

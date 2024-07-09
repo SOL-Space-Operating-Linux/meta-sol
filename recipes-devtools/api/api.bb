@@ -4,8 +4,15 @@ LICENSE = "CLOSED"
 
 S = "${WORKDIR}/git"
 
-SRC_URI = "git://128.192.19.18/flight-software/moci-software/tx2-controller.git;protocol=ssh;user=git;branch=master"
-SRCREV = "d3a269c2ae2a6735e6acfe044f011026c000f6d4"
+#S = "${WORKDIR}"
+
+#SRC_URI = "file:///home/ssrl/TX2-Controller"
+
+#SRC_URI = "git://128.192.19.18/flight-software/moci-software/tx2-controller.git;protocol=ssh;user=git;branch=master"
+#SRCREV = "d3a269c2ae2a6735e6acfe044f011026c000f6d4"
+
+SRC_URI = "git://github.com/SmallSatelliteResearchLaboratoryUGA/TX2-Controller.git;protocol=ssh;user=git;branch=yocto"
+SRCREV = "${AUTOREV}"
 
 do_install() {
     install -d ${D}/usr/bin
