@@ -8,5 +8,6 @@
 ### END INIT INFO
 
 echo "Starting up MOCI scripts:" > /dev/kmsg
+mkdir /home/root/out
 python3 /usr/bin/api/controller.py &
 telegraf &

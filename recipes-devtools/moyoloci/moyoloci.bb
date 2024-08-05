@@ -23,7 +23,7 @@ do_unpack() {
 
 do_install() {
 	install -d ${D}/home/root
-	cp -r ${S}/moyoloci ${D}/home/root/moyoloci
+	cp -r ${S}/moyoloci/* ${D}/home/root/moyoloci/
 }
 
 FILES_${PN} += "/home"

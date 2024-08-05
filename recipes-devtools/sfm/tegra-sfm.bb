@@ -2,11 +2,6 @@ DESCRIPTION = "Tegra-SFM"
 HOMEPAGE = "https://gitlab.smallsat.uga.edu/payload_software/Tegra-SFM"
 LICENSE = "CLOSED"
 
-#SRC_URI = "file:///home/ssrl/SSRLCV"
-
-#SRC_URI = "git://128.192.19.18/payload_software/SSRLCV.git;protocol=ssh;user=git;branch=master"
-#SRCREV = "00c9e7b97c658046ba57d5ee7604903bb710899b"
-
 SRC_URI = "git://github.com/uga-ssrl/SSRLCV.git;protocol=ssh;user=git;branch=master"
 SRCREV = "${AUTOREV}"
 
@@ -22,14 +17,19 @@ FILES_${PN} += "/media/sfm/seed_cube_fractal.png"
 FILES_${PN} += "/media/sfm/seed_3D_mbrot.png"
 FILES_${PN} += "/media/sfm/seed_3Dshape_illusion.png"
 FILES_${PN} += "/media/sfm/seed_flower_fractal.png"
+FILES_${PN} += "/home"
+FILES_${PN} += "/home/root"
+FILES_${PN} += "/home/root/data"
+FILES_${PN} += "/home/root/data/00"
+FILES_${PN} += "/home/root/data/00/1.png"
+FILES_${PN} += "/home/root/data/00/2.png"
+FILES_${PN} += "/home/root/data/00/params.csv"
 
 COMPATIBLE_MACHINE = "(tegra)"
 
 INHIBIT_PACKAGE_STRIP = "1"
 
 S = "${WORKDIR}/git"
-
-#S = "${WORKDIR}"
 
 TARGET_CC_ARCH += "${LDFLAGS}"
 INSANE_SKIP_${PN} += "dev-deps"
@@ -75,5 +75,10 @@ do_install() {
     install -d ${D}/media
     install -d ${D}/media/sfm
     install -m 0644 ${THISDIR}/files/seeds/* ${D}/media/sfm/
+    install -d ${D}/home
+    install -d ${D}/home/root
+    install -d ${D}/home/root/data
+    install -d ${D}/home/root/data/00
+    install -m 0644 ${THISDIR}/files/sample/* ${D}/home/root/data/00/
 }
 
